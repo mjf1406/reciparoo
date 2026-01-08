@@ -1,11 +1,11 @@
-/** @format */
+// Initialize the database
 
-import { init } from "@instantdb/react";
+import { init } from "@instantdb/core";
 import schema from "../instant.schema";
 
-// Instant app
-export const APP_ID = "490af9b7-77f6-4564-8668-b5868856eea9";
-export const GOOGLE_CLIENT_NAME = "google-web";
-
-export const db = init({ appId: APP_ID, schema });
-export const room = db.room("todos");
+// ---------
+export const db = init({
+  appId: import.meta.env.VITE_INSTANT_APP_ID,
+  schema,
+  useDateObjects: true,
+});

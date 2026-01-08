@@ -1,96 +1,24 @@
-/** @format */
-
 // Docs: https://www.instantdb.com/docs/permissions
 
-import type { InstantRules } from "@instantdb/react";
-
-const adminBind = [
-    "isAuthenticated",
-    "auth.id != null",
-    "isCreator",
-    "auth.id != null && auth.id == data.creatorId",
-    "isStillCreator",
-    "auth.id != null && auth.id == newData.creatorId",
-    "isOwner",
-    "auth.id != null && auth.id == data.id",
-    "isStillOwner",
-    "auth.id != null && auth.id == newData.id",
-    "isPremium",
-    "auth.ref('$user.profile.plan').exists(p, p in ['basic', 'plus', 'pro'])",
-];
-
-const dataBind = [
-    "isAuthenticated",
-    "auth.id != null",
-    "isOwner",
-    "data.owner == auth.id",
-    "isGuestOwner",
-    "data.owner in auth.ref('$user.linkedGuestUsers.id')",
-    "isPremium",
-    "auth.ref('$user.profile.plan').exists(p, p in ['basic', 'plus', 'pro'])",
-];
+import type { InstantRules } from "@instantdb/core";
 
 const rules = {
-    attrs: {
-        allow: {
-            $default: "false",
-        },
-    },
-    // -----------------------------
-    //      Admin Tables
-    // -----------------------------
-    $files: {
-        allow: {
-            view: "isAuthenticated",
-            create: "isAuthenticated",
-            update: "isAuthenticated",
-            delete: "isAuthenticated",
-        },
-        bind: adminBind,
-    },
-    $users: {
-        allow: {
-            view: "isOwner",
-            create: "false",
-            delete: "false",
-            update: "false",
-        },
-        bind: adminBind,
-    },
-    userProfiles: {
-        allow: {
-            view: "isOwner",
-            create: "isAuthenticated",
-            update: "isOwner",
-            delete: "isOwner",
-        },
-        bind: adminBind,
-    },
-    // ----------------------
-    //      Data Tables
-    // ----------------------
-    _5e_classes: {
-        allow: {
-            view: "isAuthenticated",
-            create: "false",
-            update: "false",
-            delete: "false",
-        },
-        bind: adminBind,
-    },
-
-    // ----------------------
-    //      User Tables
-    // ----------------------
-    todos: {
-        allow: {
-            view: "isOwner || isGuestOwner",
-            create: "isAuthenticated && (size(data.ref('owner.ownerTodos.id')) < 6 || isPremium)",
-            update: "isOwner || isGuestOwner",
-            delete: "isOwner || isGuestOwner",
-        },
-        bind: dataBind,
-    },
+  /**
+   * Welcome to Instant's permission system!
+   * Right now your rules are empty. To start filling them in, check out the docs:
+   * https://www.instantdb.com/docs/permissions
+   *
+   * Here's an example to give you a feel:
+   * posts: {
+   *   allow: {
+   *     view: "true",
+   *     create: "isOwner",
+   *     update: "isOwner",
+   *     delete: "isOwner",
+   *   },
+   *   bind: ["isOwner", "auth.id != null && auth.id == data.ownerId"],
+   * },
+   */
 } satisfies InstantRules;
 
 export default rules;

@@ -1,8 +1,15 @@
-8 Next Steps
+# Welcome to your InstantDB Vanilla JS app 👋
 
-create a .env file with the following 
+This is a Vite project scaffolded with create-instant-app.
 
-VITE_INSTANT_APP_ID = ""
-INSTANT_APP_ADMIN_TOKEN = ""
-GOOGLE_SECRET = ""
-GOOGLE_CLIENT = ""
+To run the development server:
+`npm run dev`
+
+To push schema changes:
+`npx instant-cli push`
+
+To pull schema changes:
+`npx instant-cli pull`
+
+
+Got any feedback or questions? Join our [Discord](https://discord.gg/hgVf9R6SBm)

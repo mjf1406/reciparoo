@@ -1,15 +1,13 @@
-# Welcome to your InstantDB Vanilla JS app 👋
+<!-- @format -->
 
-This is a Vite project scaffolded with create-instant-app.
+# Recipe Manager
 
-To run the development server:
-`npm run dev`
+## Shadcn Project
 
-To push schema changes:
-`npx instant-cli push`
+https://ui.shadcn.com/create?base=base&style=nova&baseColor=stone&theme=amber&iconLibrary=lucide&font=inter&menuAccent=bold&menuColor=default&radius=large&item=preview
 
-To pull schema changes:
-`npx instant-cli pull`
+## Change Log
 
+### 2026/01/09
 
-Got any feedback or questions? Join our [Discord](https://discord.gg/hgVf9R6SBm)
+-   DX: initialized repository with tailwind, shadcn, InstantDB, and auth components

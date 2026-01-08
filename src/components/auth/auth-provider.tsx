@@ -7,26 +7,18 @@ import { db } from "@/lib/db/db";
 import type { InstaQLEntity } from "@instantdb/react";
 import type { AppSchema } from "@/instant.schema";
 
-type OrganizationWithRelations = InstaQLEntity<
+type HomeWithRelations = InstaQLEntity<
     AppSchema,
-    "organizations",
+    "homes",
     {
         owner: {};
-        orgStudents: {};
-        orgTeachers: {};
-        orgParents: {};
         admins: {};
-        joinCodeEntity: {};
-        classes: {
-            owner: {};
-            classAdmins: {};
-            classTeachers: {};
-        };
+        homeMembers: {};
     }
 >;
 
-type OrgQueryResult = {
-    organizations: OrganizationWithRelations[];
+type HomeQueryResult = {
+    homes: HomeWithRelations[];
 };
 
 interface AuthContextValue {
@@ -46,7 +38,7 @@ interface AuthContextValue {
         plan: string;
     };
     isLoading: boolean;
-    organizations: OrganizationWithRelations[];
+    homes: HomeWithRelations[];
     error: { message: string } | null | undefined;
 }
 
@@ -65,8 +57,23 @@ export default function AuthProvider({
 }: {
     children: React.ReactNode;
 }) {
-    const { user, isLoading: authLoading } = db.useAuth();
+    // Check if app ID is configured
+    const appId = import.meta.env.VITE_INSTANT_APP_ID;
+    if (!appId) {
+        return (
+            <div className="flex min-h-screen items-center justify-center bg-background p-4">
+                <div className="bg-card border border-border rounded-lg p-4 max-w-md">
+                    <h2 className="text-destructive font-bold mb-2">Configuration Error</h2>
+                    <p className="text-foreground">VITE_INSTANT_APP_ID is not set in your environment variables.</p>
+                    <p className="text-muted-foreground text-sm mt-2">Please set it in your .env file.</p>
+                </div>
+            </div>
+        );
+    }
 
+    const { user, isLoading: authLoading, error: authError } = db.useAuth();
+
+    // Query user data only if authenticated
     const { data, isLoading: dataLoading } = db.useQuery(
         user?.id
             ? {
@@ -79,46 +86,43 @@ export default function AuthProvider({
 
     const userData = data?.$users?.[0];
 
-    const orgQuery = user
+    // Query homes only if authenticated
+    const homeQuery = user?.id
         ? {
-              organizations: {
+              homes: {
                   $: {
                       where: {
                           or: [
                               { "owner.id": user.id },
                               { "admins.id": user.id },
-                              { "orgStudents.id": user.id },
-                              { "orgTeachers.id": user.id },
-                              { "orgParents.id": user.id },
+                              { "homeMembers.id": user.id },
                           ],
                       },
                   },
                   owner: {},
-                  orgStudents: {},
-                  orgTeachers: {},
-                  orgParents: {},
                   admins: {},
-                  joinCodeEntity: {},
-                  classes: {
-                      owner: {},
-                      classAdmins: {},
-                      classTeachers: {},
-                  },
+                  homeMembers: {},
               },
           }
         : null;
 
     const {
-        data: orgData,
-        isLoading: orgLoading,
-        error: orgError,
-    } = db.useQuery(orgQuery);
+        data: homeData,
+        isLoading: homeLoading,
+        error: homeError,
+    } = db.useQuery(homeQuery);
 
-    const typedOrgData = (orgData as OrgQueryResult | undefined) ?? null;
+    const typedHomeData = (homeData as HomeQueryResult | undefined) ?? null;
+
+    // Only show loading if:
+    // 1. Auth is still loading, OR
+    // 2. User exists and we're still loading user data or homes
+    // If user is null, queries are null so they won't be loading
+    const isLoading = authLoading || (user?.id ? (dataLoading || homeLoading) : false);
 
     const value: AuthContextValue = {
         user: {
-            created_at: userData?.created || "",
+            created_at: userData?.created || null,
             email: user?.email || "",
             id: user?.id || "",
             imageURL: user?.imageURL || null,
@@ -132,9 +136,9 @@ export default function AuthProvider({
             lastName: userData?.lastName || null,
             plan: userData?.plan || "free",
         },
-        isLoading: authLoading || dataLoading || orgLoading,
-        organizations: typedOrgData?.organizations || [],
-        error: orgError,
+        isLoading,
+        homes: typedHomeData?.homes || [],
+        error: homeError || (authError ? { message: authError.message } : null),
     };
 
     return (

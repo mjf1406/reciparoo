@@ -14,7 +14,7 @@ interface GoogleJwtPayload {
     family_name?: string;
 }
 
-const GOOGLE_CLIENT_NAME = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_NAME || "";
+const GOOGLE_CLIENT_NAME = import.meta.env.VITE_GOOGLE_CLIENT_NAME!;
 
 function handleGoogleSuccess(
     credentialResponse: { credential?: string },

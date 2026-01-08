@@ -59,6 +59,30 @@ const _schema = i.schema({
                 label: "homes",
             }, // Each user can have many homes
         },
+        homeAdmins: {
+            forward: {
+                on: "homes",
+                has: "many",
+                label: "admins",
+            }, // Each home can have many admin users
+            reverse: {
+                on: "$users",
+                has: "many",
+                label: "adminHomes",
+            }, // Each user can be an admin of many homes
+        },
+        homeMembers: {
+            forward: {
+                on: "homes",
+                has: "many",
+                label: "homeMembers",
+            }, // Each home can have many member users
+            reverse: {
+                on: "$users",
+                has: "many",
+                label: "memberHomes",
+            }, // Each user can be a member of many homes
+        },
     },
     rooms: {
         todos: {

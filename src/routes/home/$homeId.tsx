@@ -1,10 +1,11 @@
 /** @format */
 
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Outlet, useLocation } from "@tanstack/react-router";
 import { FeatureGrid } from "@/components/home/feature-grid";
 import { Navbar } from "@/components/layout/navbar";
 import useHomeById from "@/hooks/use-home-by-id";
 import { HomeIcon, Loader2 } from "lucide-react";
+import { Breadcrumb } from "@/components/ui/breadcrumb";
 
 export const Route = createFileRoute("/home/$homeId")({
     component: HomeDashboard,
@@ -13,6 +14,7 @@ export const Route = createFileRoute("/home/$homeId")({
 function HomeDashboard() {
     const { homeId } = Route.useParams();
     const { home, isLoading, error } = useHomeById(homeId!);
+    const location = useLocation();
 
     if (isLoading) {
         return (
@@ -48,16 +50,32 @@ function HomeDashboard() {
         );
     }
 
+    // Check if we're on the exact route (no child route) by comparing pathname
+    // The pathname should be exactly /home/{homeId} with no additional segments
+    const expectedPath = `/home/${homeId}`;
+    const isExactRoute = location.pathname === expectedPath;
+    
     return (
         <div className="min-h-screen bg-background">
             <Navbar homeId={homeId} />
-            <main className="container mx-auto px-4 py-8">
-                <h1 className="mb-8 text-3xl! font-bold flex items-center">
-                    <HomeIcon className="w-12 h-12 mr-2 inline-block text-primary" />{" "}
-                    {(home as { name: string } | null)?.name}
-                </h1>
-                <FeatureGrid homeId={homeId} />
-            </main>
+            {isExactRoute ? (
+                <main className="container mx-auto px-4 py-8">
+                    <Breadcrumb
+                        items={[
+                            { label: "Home", to: "/" },
+                            { label: (home as { name: string } | null)?.name || "Home" },
+                        ]}
+                        className="mb-6"
+                    />
+                    <h1 className="mb-8 text-3xl! font-bold flex items-center">
+                        <HomeIcon className="w-12 h-12 mr-2 inline-block text-primary" />{" "}
+                        {(home as { name: string } | null)?.name}
+                    </h1>
+                    <FeatureGrid homeId={homeId} />
+                </main>
+            ) : (
+                <Outlet />
+            )}
         </div>
     );
 }

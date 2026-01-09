@@ -11,6 +11,8 @@
 
 ### 2026/01/10
 
+-   UI: added home child pages: recipes, calendar, grocery list, pantry
+-   UI: added breadcrumb navigation to home child pages
 -   UI: added action menu to home card
 -   UX: user can now edit and delete homes
 -   UI: added created and updated timestamps to home card

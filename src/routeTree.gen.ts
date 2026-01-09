@@ -11,6 +11,10 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as HomeHomeIdRouteImport } from './routes/home/$homeId'
+import { Route as HomeHomeIdRecipesRouteImport } from './routes/home/$homeId/recipes'
+import { Route as HomeHomeIdPantryRouteImport } from './routes/home/$homeId/pantry'
+import { Route as HomeHomeIdGroceryListRouteImport } from './routes/home/$homeId/grocery-list'
+import { Route as HomeHomeIdCalendarRouteImport } from './routes/home/$homeId/calendar'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -22,31 +26,82 @@ const HomeHomeIdRoute = HomeHomeIdRouteImport.update({
   path: '/home/$homeId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const HomeHomeIdRecipesRoute = HomeHomeIdRecipesRouteImport.update({
+  id: '/recipes',
+  path: '/recipes',
+  getParentRoute: () => HomeHomeIdRoute,
+} as any)
+const HomeHomeIdPantryRoute = HomeHomeIdPantryRouteImport.update({
+  id: '/pantry',
+  path: '/pantry',
+  getParentRoute: () => HomeHomeIdRoute,
+} as any)
+const HomeHomeIdGroceryListRoute = HomeHomeIdGroceryListRouteImport.update({
+  id: '/grocery-list',
+  path: '/grocery-list',
+  getParentRoute: () => HomeHomeIdRoute,
+} as any)
+const HomeHomeIdCalendarRoute = HomeHomeIdCalendarRouteImport.update({
+  id: '/calendar',
+  path: '/calendar',
+  getParentRoute: () => HomeHomeIdRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/home/$homeId': typeof HomeHomeIdRoute
+  '/home/$homeId': typeof HomeHomeIdRouteWithChildren
+  '/home/$homeId/calendar': typeof HomeHomeIdCalendarRoute
+  '/home/$homeId/grocery-list': typeof HomeHomeIdGroceryListRoute
+  '/home/$homeId/pantry': typeof HomeHomeIdPantryRoute
+  '/home/$homeId/recipes': typeof HomeHomeIdRecipesRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/home/$homeId': typeof HomeHomeIdRoute
+  '/home/$homeId': typeof HomeHomeIdRouteWithChildren
+  '/home/$homeId/calendar': typeof HomeHomeIdCalendarRoute
+  '/home/$homeId/grocery-list': typeof HomeHomeIdGroceryListRoute
+  '/home/$homeId/pantry': typeof HomeHomeIdPantryRoute
+  '/home/$homeId/recipes': typeof HomeHomeIdRecipesRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/home/$homeId': typeof HomeHomeIdRoute
+  '/home/$homeId': typeof HomeHomeIdRouteWithChildren
+  '/home/$homeId/calendar': typeof HomeHomeIdCalendarRoute
+  '/home/$homeId/grocery-list': typeof HomeHomeIdGroceryListRoute
+  '/home/$homeId/pantry': typeof HomeHomeIdPantryRoute
+  '/home/$homeId/recipes': typeof HomeHomeIdRecipesRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/home/$homeId'
+  fullPaths:
+    | '/'
+    | '/home/$homeId'
+    | '/home/$homeId/calendar'
+    | '/home/$homeId/grocery-list'
+    | '/home/$homeId/pantry'
+    | '/home/$homeId/recipes'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/home/$homeId'
-  id: '__root__' | '/' | '/home/$homeId'
+  to:
+    | '/'
+    | '/home/$homeId'
+    | '/home/$homeId/calendar'
+    | '/home/$homeId/grocery-list'
+    | '/home/$homeId/pantry'
+    | '/home/$homeId/recipes'
+  id:
+    | '__root__'
+    | '/'
+    | '/home/$homeId'
+    | '/home/$homeId/calendar'
+    | '/home/$homeId/grocery-list'
+    | '/home/$homeId/pantry'
+    | '/home/$homeId/recipes'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  HomeHomeIdRoute: typeof HomeHomeIdRoute
+  HomeHomeIdRoute: typeof HomeHomeIdRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -65,12 +120,58 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof HomeHomeIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/home/$homeId/recipes': {
+      id: '/home/$homeId/recipes'
+      path: '/recipes'
+      fullPath: '/home/$homeId/recipes'
+      preLoaderRoute: typeof HomeHomeIdRecipesRouteImport
+      parentRoute: typeof HomeHomeIdRoute
+    }
+    '/home/$homeId/pantry': {
+      id: '/home/$homeId/pantry'
+      path: '/pantry'
+      fullPath: '/home/$homeId/pantry'
+      preLoaderRoute: typeof HomeHomeIdPantryRouteImport
+      parentRoute: typeof HomeHomeIdRoute
+    }
+    '/home/$homeId/grocery-list': {
+      id: '/home/$homeId/grocery-list'
+      path: '/grocery-list'
+      fullPath: '/home/$homeId/grocery-list'
+      preLoaderRoute: typeof HomeHomeIdGroceryListRouteImport
+      parentRoute: typeof HomeHomeIdRoute
+    }
+    '/home/$homeId/calendar': {
+      id: '/home/$homeId/calendar'
+      path: '/calendar'
+      fullPath: '/home/$homeId/calendar'
+      preLoaderRoute: typeof HomeHomeIdCalendarRouteImport
+      parentRoute: typeof HomeHomeIdRoute
+    }
   }
 }
 
+interface HomeHomeIdRouteChildren {
+  HomeHomeIdCalendarRoute: typeof HomeHomeIdCalendarRoute
+  HomeHomeIdGroceryListRoute: typeof HomeHomeIdGroceryListRoute
+  HomeHomeIdPantryRoute: typeof HomeHomeIdPantryRoute
+  HomeHomeIdRecipesRoute: typeof HomeHomeIdRecipesRoute
+}
+
+const HomeHomeIdRouteChildren: HomeHomeIdRouteChildren = {
+  HomeHomeIdCalendarRoute: HomeHomeIdCalendarRoute,
+  HomeHomeIdGroceryListRoute: HomeHomeIdGroceryListRoute,
+  HomeHomeIdPantryRoute: HomeHomeIdPantryRoute,
+  HomeHomeIdRecipesRoute: HomeHomeIdRecipesRoute,
+}
+
+const HomeHomeIdRouteWithChildren = HomeHomeIdRoute._addFileChildren(
+  HomeHomeIdRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  HomeHomeIdRoute: HomeHomeIdRoute,
+  HomeHomeIdRoute: HomeHomeIdRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

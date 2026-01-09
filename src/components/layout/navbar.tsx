@@ -1,7 +1,7 @@
 /** @format */
 
 import { useState } from "react";
-import { Link, useLocation } from "@tanstack/react-router";
+import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { NavUser } from "@/components/nav-user";
 import { BookOpen, Calendar, ShoppingCart, Package, Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -21,13 +21,14 @@ interface NavbarProps {
 const navLinks = [
     { label: "Recipes", icon: BookOpen, path: "recipes" },
     { label: "Calendar", icon: Calendar, path: "calendar" },
-    { label: "Groceries", icon: ShoppingCart, path: "groceries" },
+    { label: "Groceries", icon: ShoppingCart, path: "grocery-list" },
     { label: "Pantry", icon: Package, path: "pantry" },
 ];
 
 export function Navbar({ homeId }: NavbarProps) {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const location = useLocation();
+    const navigate = useNavigate();
 
     const isActive = (path: string) => {
         return location.pathname.includes(`/${path}`);
@@ -35,8 +36,7 @@ export function Navbar({ homeId }: NavbarProps) {
 
     const handleNavClick = (path: string) => {
         if (homeId) {
-            // Navigate to the path - routes will be created later
-            window.location.href = `/home/${homeId}/${path}`;
+            navigate({ to: `/home/${homeId}/${path}` });
         }
         setMobileMenuOpen(false);
     };

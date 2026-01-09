@@ -6,14 +6,14 @@ import { BookOpen, Calendar, ShoppingCart, Refrigerator } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "@tanstack/react-router";
 
 interface FeatureGridProps {
     homeId: string;
 }
 
-export function FeatureGrid({ homeId: _homeId }: FeatureGridProps) {
-    // homeId will be used for navigation when recipes page is implemented
-    void _homeId;
+export function FeatureGrid({ homeId }: FeatureGridProps) {
+    const navigate = useNavigate();
 
     const features = [
         {
@@ -23,8 +23,7 @@ export function FeatureGrid({ homeId: _homeId }: FeatureGridProps) {
             icon: BookOpen,
             comingSoon: false,
             onClick: () => {
-                // Navigate to recipes page when implemented
-                console.log("Navigate to recipes");
+                navigate({ to: `/home/${homeId}/recipes` });
             },
         },
         {
@@ -33,6 +32,9 @@ export function FeatureGrid({ homeId: _homeId }: FeatureGridProps) {
             description: "Plan your meals and schedule recipes for specific days",
             icon: Calendar,
             comingSoon: true,
+            onClick: () => {
+                navigate({ to: `/home/${homeId}/calendar` });
+            },
         },
         {
             id: "grocery-list",
@@ -40,6 +42,9 @@ export function FeatureGrid({ homeId: _homeId }: FeatureGridProps) {
             description: "Auto-generate shopping lists from your meal plans",
             icon: ShoppingCart,
             comingSoon: true,
+            onClick: () => {
+                navigate({ to: `/home/${homeId}/grocery-list` });
+            },
         },
         {
             id: "pantry",
@@ -47,6 +52,9 @@ export function FeatureGrid({ homeId: _homeId }: FeatureGridProps) {
             description: "Track inventory and get notified when items run low",
             icon: Refrigerator,
             comingSoon: true,
+            onClick: () => {
+                navigate({ to: `/home/${homeId}/pantry` });
+            },
         },
     ];
 

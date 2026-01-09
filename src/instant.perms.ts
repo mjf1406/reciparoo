@@ -16,10 +16,10 @@ const dataBind = [
     "auth.isGuest == false",
     // User is the owner of the data
     "isOwner",
-    "auth.id in data.ref('owner.id') || auth.id == data.user || auth.id == data.id ",
+    "auth.id in data.ref('owner.id') || auth.id == data.id",
     // User is still the owner of the data
     "isStillOwner",
-    "auth.id in newData.ref('owner.id') || auth.id == newData.user || auth.id == newData.id ",
+    "auth.id in newData.ref('owner.id') || auth.id == newData.id",
     // User is a premium user
     "isPremium",
     "auth.ref('$user.profile.plan').exists(p, p in ['basic', 'plus', 'pro'])",

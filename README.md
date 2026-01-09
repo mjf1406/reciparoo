@@ -11,6 +11,8 @@
 
 ### 2026/01/10
 
+-   UI: added under construction image to home child pages
+-   DX: created image skeleton component
 -   UI: added home child pages: recipes, calendar, grocery list, pantry
 -   UI: added breadcrumb navigation to home child pages
 -   UI: added action menu to home card

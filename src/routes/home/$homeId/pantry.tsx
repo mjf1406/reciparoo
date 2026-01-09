@@ -4,6 +4,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import useHomeById from "@/hooks/use-home-by-id";
 import { Loader2 } from "lucide-react";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
+import { UnderConstructionImage } from "@/components/ui/under-construction-image";
 
 export const Route = createFileRoute("/home/$homeId/pantry")({
     component: PantryPage,
@@ -59,12 +60,10 @@ function PantryPage() {
                 className="mb-6"
             />
             <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
-                <img
-                    src="/under-construction.webp"
-                    alt="Under Construction"
-                    className="max-w-md w-full mb-6"
-                />
-                <h2 className="text-2xl font-semibold mb-2">Under Construction</h2>
+                <UnderConstructionImage />
+                <h2 className="text-2xl font-semibold mb-2">
+                    Under Construction
+                </h2>
                 <p className="text-muted-foreground">
                     This feature is currently being developed. Check back soon!
                 </p>

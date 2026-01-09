@@ -67,7 +67,7 @@ const rules = {
         allow: {
             create: "isAuthenticated",
             view: "isAuthenticated && (isOwner || isAdmin || isHomeMember)",
-            update: "isAuthenticated && (isOwner || isAdmin) && (isStillOwner || isStillAdmin)",
+            update: "isAuthenticated && (isOwner || isAdmin)",
             delete: "isAuthenticated && isOwner",
         },
         bind: dataBind,

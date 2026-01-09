@@ -7,6 +7,7 @@ import {
     Dialog,
     DialogContent,
     DialogDescription,
+    DialogFooter,
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
@@ -70,11 +71,24 @@ function CredenzaBody({
     );
 }
 
+function CredenzaFooter({
+    children,
+    className,
+    ...props
+}: React.ComponentProps<typeof DialogFooter>) {
+    return (
+        <DialogFooter className={className} {...props}>
+            {children}
+        </DialogFooter>
+    );
+}
+
 export {
     Credenza,
     CredenzaBody,
     CredenzaContent,
     CredenzaDescription,
+    CredenzaFooter,
     CredenzaHeader,
     CredenzaTitle,
 };

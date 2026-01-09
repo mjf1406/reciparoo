@@ -8,11 +8,13 @@ import {
     Card,
     CardContent,
     CardDescription,
+    CardFooter,
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CreateHomeDialog } from "./create-home-dialog";
+import { HomeActionMenu } from "./home-action-menu";
 import { useState } from "react";
 import type { InstaQLEntity } from "@instantdb/react";
 import type { AppSchema } from "@/instant.schema";
@@ -64,9 +66,15 @@ export function HomesGrid({ homes }: HomesGridProps) {
                 {homes.map((home) => (
                     <Card
                         key={home.id}
-                        className="cursor-pointer transition-all hover:shadow-lg hover:scale-[1.02]"
+                        className="cursor-pointer transition-all hover:shadow-lg hover:scale-[1.02] relative"
                         onClick={() => handleHomeClick(home.id)}
                     >
+                        <div
+                            className="absolute top-4 right-4 z-10"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <HomeActionMenu home={home} />
+                        </div>
                         <CardHeader>
                             <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-lg bg-primary/10">
                                 {home.icon ? (
@@ -82,11 +90,9 @@ export function HomesGrid({ homes }: HomesGridProps) {
                             <CardTitle className="text-xl">
                                 {home.name}
                             </CardTitle>
-                            {home.description && (
-                                <CardDescription className="mt-2 line-clamp-2">
-                                    {home.description}
-                                </CardDescription>
-                            )}
+                            <CardDescription className="mt-2 line-clamp-2">
+                                {home.description || "No description"}
+                            </CardDescription>
                         </CardHeader>
                         <CardContent>
                             <Button
@@ -100,6 +106,38 @@ export function HomesGrid({ homes }: HomesGridProps) {
                                 Open Home
                             </Button>
                         </CardContent>
+                        <CardFooter className="flex flex-col items-start gap-1 text-xs text-muted-foreground pt-2">
+                            {home.created && (
+                                <div>
+                                    Created:{" "}
+                                    {new Date(home.created).toLocaleTimeString(
+                                        undefined,
+                                        {
+                                            year: "numeric",
+                                            month: "short",
+                                            day: "numeric",
+                                            hour: "2-digit",
+                                            minute: "2-digit",
+                                        }
+                                    )}
+                                </div>
+                            )}
+                            {home.updated && (
+                                <div>
+                                    Updated:{" "}
+                                    {new Date(home.updated).toLocaleTimeString(
+                                        undefined,
+                                        {
+                                            year: "numeric",
+                                            month: "short",
+                                            day: "numeric",
+                                            hour: "2-digit",
+                                            minute: "2-digit",
+                                        }
+                                    )}
+                                </div>
+                            )}
+                        </CardFooter>
                     </Card>
                 ))}
 

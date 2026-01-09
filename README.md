@@ -2,11 +2,18 @@
 
 # Recipe Manager
 
-## Shadcn Project
+## Links
 
-https://ui.shadcn.com/create?base=base&style=nova&baseColor=stone&theme=amber&iconLibrary=lucide&font=inter&menuAccent=bold&menuColor=default&radius=large&item=preview
+-   [Shadcn Project](https://ui.shadcn.com/create?base=base&style=nova&baseColor=stone&theme=amber&iconLibrary=lucide&font=inter&menuAccent=bold&menuColor=default&radius=large&item=preview)
+-   [Hosted on Cloudflare Pages](https://reciparoo.pages.dev/)
 
 ## Change Log
+
+### 2026/01/10
+
+-   UI: added action menu to home card
+-   UX: user can now edit and delete homes
+-   UI: added created and updated timestamps to home card
 
 ### 2026/01/09
 

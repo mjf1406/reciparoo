@@ -53,7 +53,7 @@ export function Navbar({ homeId }: NavbarProps) {
                     <img
                         src="/logo-with-text.webp"
                         alt="Reciparoo"
-                        className="h-24 w-auto"
+                        className="h-16 w-auto"
                     />
                 </Link>
 
@@ -68,7 +68,7 @@ export function Navbar({ homeId }: NavbarProps) {
                                     "flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors",
                                     isActive(link.path)
                                         ? "bg-primary text-primary-foreground"
-                                        : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                                        : "text-muted-foreground hover:text-accent hover:underline"
                                 )}
                             >
                                 <link.icon className="h-4 w-4" />

@@ -119,7 +119,6 @@ export default function AuthProvider({
     } = db.useQuery(homeQuery);
 
     const typedHomeData = (homeData as HomeQueryResult | undefined) ?? null;
-
     // Only show loading if:
     // 1. Auth is still loading, OR
     // 2. User exists and we're still loading user data or homes

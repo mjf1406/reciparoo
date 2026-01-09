@@ -1,10 +1,11 @@
 /** @format */
 
-import { useEffect } from "react";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useAuthContext } from "@/components/auth/auth-provider";
 import { LoginPage } from "@/components/auth/login-page";
 import { NoHome } from "@/components/home/no-home";
+import { HomesGrid } from "@/components/home/homes-grid";
+import { Navbar } from "@/components/layout/navbar";
 
 export const Route = createFileRoute("/")({
     component: HomePage,
@@ -12,17 +13,6 @@ export const Route = createFileRoute("/")({
 
 function HomePage() {
     const { user, isLoading, homes, error } = useAuthContext();
-    const navigate = useNavigate();
-
-    useEffect(() => {
-        if (!isLoading && user?.id && homes.length > 0) {
-            navigate({
-                to: "/home/$homeId",
-                params: { homeId: homes[0].id },
-                replace: true,
-            });
-        }
-    }, [isLoading, user?.id, homes, navigate]);
 
     if (isLoading) {
         return (
@@ -35,9 +25,7 @@ function HomePage() {
     if (error) {
         return (
             <div className="flex min-h-screen items-center justify-center">
-                <div className="text-destructive">
-                    Error: {error.message}
-                </div>
+                <div className="text-destructive">Error: {error.message}</div>
             </div>
         );
     }
@@ -52,10 +40,13 @@ function HomePage() {
         return <NoHome />;
     }
 
-    // Has homes - will redirect via useEffect
+    // Has homes - show grid of homes
     return (
-        <div className="flex min-h-screen items-center justify-center">
-            <div className="text-muted-foreground">Redirecting...</div>
+        <div className="min-h-screen bg-background">
+            <Navbar />
+            <main className="container mx-auto px-4 py-8">
+                <HomesGrid homes={homes} />
+            </main>
         </div>
     );
 }

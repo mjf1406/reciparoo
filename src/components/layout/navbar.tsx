@@ -46,7 +46,7 @@ export function Navbar({ homeId }: NavbarProps) {
             <div className="flex h-16 w-full items-center justify-between px-4 sm:px-6 lg:px-8">
                 {/* Logo */}
                 <Link
-                    to={homeId ? "/home/$homeId" : "/"}
+                    to={"/"}
                     params={homeId ? { homeId } : undefined}
                     className="flex shrink-0 items-center transition-opacity hover:opacity-80"
                 >

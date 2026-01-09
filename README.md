@@ -10,4 +10,6 @@ https://ui.shadcn.com/create?base=base&style=nova&baseColor=stone&theme=amber&ic
 
 ### 2026/01/09
 
+-   UI: added home icon to /home/$homeId page title
+-   UX: user can now create homes
 -   DX: initialized repository with tailwind, shadcn, InstantDB, and auth components

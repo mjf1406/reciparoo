@@ -3,7 +3,7 @@
 "use client";
 
 import { useState } from "react";
-import { Home, Users } from "lucide-react";
+import { Users, Home as HomeIcon } from "lucide-react";
 import {
     Card,
     CardContent,
@@ -13,16 +13,23 @@ import {
 } from "@/components/ui/card";
 import { CreateHomeDialog } from "./create-home-dialog";
 import { Button } from "@/components/ui/button";
+import { Navbar } from "@/components/layout/navbar";
 
 export function NoHome() {
     const [createDialogOpen, setCreateDialogOpen] = useState(false);
 
     return (
-        <div className="flex min-h-screen items-center justify-center bg-background p-4">
-            <Card className="w-full max-w-2xl">
+        <div className="flex min-h-screen flex-col bg-background">
+            <Navbar />
+            <div className="flex flex-1 items-center justify-center p-4">
+                <Card className="w-full max-w-2xl">
                 <CardHeader className="text-center">
-                    <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-                        <Home className="h-8 w-8 text-primary" />
+                    <div className="mx-auto mb-4 flex items-center justify-center">
+                        <img
+                            src="/logo.webp"
+                            alt="Reciparoo"
+                            className="h-20 w-auto"
+                        />
                     </div>
                     <CardTitle className="text-3xl font-bold">
                         Create Your First Home
@@ -52,7 +59,7 @@ export function NoHome() {
                         </div>
                         <div className="flex items-start gap-4">
                             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-                                <Home className="h-5 w-5 text-primary" />
+                                <HomeIcon className="h-5 w-5 text-primary" />
                             </div>
                             <div>
                                 <h3 className="font-semibold">
@@ -75,11 +82,12 @@ export function NoHome() {
                         </Button>
                     </div>
                 </CardContent>
-            </Card>
-            <CreateHomeDialog
-                open={createDialogOpen}
-                onOpenChange={setCreateDialogOpen}
-            />
+                </Card>
+                <CreateHomeDialog
+                    open={createDialogOpen}
+                    onOpenChange={setCreateDialogOpen}
+                />
+            </div>
         </div>
     );
 }

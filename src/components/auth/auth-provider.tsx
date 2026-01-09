@@ -29,7 +29,6 @@ interface AuthContextValue {
         imageURL: string | null;
         avatarURL: string | null;
         isGuest: boolean;
-        polarCustomerId: string | null;
         refresh_token: string | null;
         updated_at: Date | null | string;
         type: string;
@@ -63,9 +62,16 @@ export default function AuthProvider({
         return (
             <div className="flex min-h-screen items-center justify-center bg-background p-4">
                 <div className="bg-card border border-border rounded-lg p-4 max-w-md">
-                    <h2 className="text-destructive font-bold mb-2">Configuration Error</h2>
-                    <p className="text-foreground">VITE_INSTANT_APP_ID is not set in your environment variables.</p>
-                    <p className="text-muted-foreground text-sm mt-2">Please set it in your .env file.</p>
+                    <h2 className="text-destructive font-bold mb-2">
+                        Configuration Error
+                    </h2>
+                    <p className="text-foreground">
+                        VITE_INSTANT_APP_ID is not set in your environment
+                        variables.
+                    </p>
+                    <p className="text-muted-foreground text-sm mt-2">
+                        Please set it in your .env file.
+                    </p>
                 </div>
             </div>
         );
@@ -118,7 +124,8 @@ export default function AuthProvider({
     // 1. Auth is still loading, OR
     // 2. User exists and we're still loading user data or homes
     // If user is null, queries are null so they won't be loading
-    const isLoading = authLoading || (user?.id ? (dataLoading || homeLoading) : false);
+    const isLoading =
+        authLoading || (user?.id ? dataLoading || homeLoading : false);
 
     const value: AuthContextValue = {
         user: {
@@ -128,7 +135,6 @@ export default function AuthProvider({
             imageURL: user?.imageURL || null,
             avatarURL: userData?.avatarURL || null,
             isGuest: user?.isGuest || false,
-            polarCustomerId: userData?.polarCustomerId || null,
             refresh_token: user?.refresh_token || null,
             updated_at: userData?.updated || null,
             type: userData?.type || "guest",

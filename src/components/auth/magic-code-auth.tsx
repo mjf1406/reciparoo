@@ -2,7 +2,8 @@
 
 "use client";
 
-import { useState, useRef, FormEvent } from "react";
+import { useState, useRef } from "react";
+import type { FormEvent } from "react";
 import { Mail } from "lucide-react";
 
 import { db } from "@/lib/db/db";

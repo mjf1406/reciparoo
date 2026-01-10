@@ -56,6 +56,11 @@ const _schema = i.schema({
             created: i.date().indexed(),
             updated: i.date().indexed(),
         }),
+        notes: i.entity({
+            content: i.string(),
+            created: i.date().indexed(),
+            updated: i.date().indexed(),
+        }),
     },
     links: {
         // ------------------------
@@ -194,6 +199,19 @@ const _schema = i.schema({
                 on: "homes", // Each home
                 has: "many", // has many
                 label: "recipes", // recipes
+            },
+        },
+        recipeNotes: {
+            forward: {
+                on: "notes", // Each note
+                has: "one", // has one
+                label: "recipe", // recipe
+                onDelete: "cascade",
+            },
+            reverse: {
+                on: "recipes", // Each recipe
+                has: "many", // has many
+                label: "notes", // notes
             },
         },
         // ------------------------

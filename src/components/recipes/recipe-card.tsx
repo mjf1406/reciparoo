@@ -15,6 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { ImageSkeleton } from "@/components/ui/image-skeleton";
 import { RecipeActionMenu } from "./recipe-action-menu";
 import { useAuthContext } from "@/components/auth/auth-provider";
+import { useNavigate } from "@tanstack/react-router";
 import type { InstaQLEntity } from "@instantdb/react";
 import type { AppSchema } from "@/instant.schema";
 
@@ -37,6 +38,7 @@ interface RecipeCardProps {
 
 export function RecipeCard({ recipe }: RecipeCardProps) {
     const { user } = useAuthContext();
+    const navigate = useNavigate();
 
     // Parse ingredients and equipment from JSON strings
     const ingredients = recipe.ingredients
@@ -67,8 +69,21 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
     const prepTime = formatTime(recipe.prepTime);
     const cookTime = formatTime(recipe.cookTime);
 
+    const handleCardClick = () => {
+        const home = recipe.home;
+        if (home?.id && recipe.id) {
+            navigate({
+                to: "/home/$homeId/recipes/$recipeId",
+                params: { homeId: home.id, recipeId: recipe.id },
+            });
+        }
+    };
+
     return (
-        <Card className="transition-all hover:shadow-lg hover:scale-[1.02] flex flex-col relative">
+        <Card
+            className="transition-all hover:shadow-lg hover:scale-[1.02] flex flex-col relative cursor-pointer"
+            onClick={handleCardClick}
+        >
             {/* Recipe Action Menu */}
             <div
                 className="absolute top-4 right-4 z-10"

@@ -77,6 +77,18 @@ const dataBind = [
     // User is a viewer of the home that the file belongs to
     "isFileHomeViewer",
     "auth.id in data.ref('home.viewers.id')",
+    // User is owner of the home that the note's recipe belongs to
+    "isNoteRecipeHomeOwner",
+    "auth.id in data.ref('recipe.home.owner.id')",
+    // User is admin of the home that the note's recipe belongs to
+    "isNoteRecipeHomeAdmin",
+    "auth.id in data.ref('recipe.home.admins.id')",
+    // User is a member of the home that the note's recipe belongs to
+    "isNoteRecipeHomeMember",
+    "auth.id in data.ref('recipe.home.homeMembers.id')",
+    // User is a viewer of the home that the note's recipe belongs to
+    "isNoteRecipeHomeViewer",
+    "auth.id in data.ref('recipe.home.viewers.id')",
 ];
 
 const rules = {
@@ -136,6 +148,15 @@ const rules = {
             view: "true",
             update: "isAuthenticated && (isRecipeHomeOwner || isRecipeHomeAdmin || isRecipeHomeMember)",
             delete: "isAuthenticated && (isRecipeHomeOwner || isRecipeHomeAdmin || isRecipeHomeMember)",
+        },
+        bind: dataBind,
+    },
+    notes: {
+        allow: {
+            create: "isAuthenticated && (isNoteRecipeHomeOwner || isNoteRecipeHomeAdmin || isNoteRecipeHomeMember || isNoteRecipeHomeViewer)",
+            view: "isAuthenticated && (isNoteRecipeHomeOwner || isNoteRecipeHomeAdmin || isNoteRecipeHomeMember || isNoteRecipeHomeViewer)",
+            update: "isAuthenticated && (isNoteRecipeHomeOwner || isNoteRecipeHomeAdmin || isNoteRecipeHomeMember || isNoteRecipeHomeViewer)",
+            delete: "isAuthenticated && (isNoteRecipeHomeOwner || isNoteRecipeHomeAdmin || isNoteRecipeHomeMember || isNoteRecipeHomeViewer)",
         },
         bind: dataBind,
     },

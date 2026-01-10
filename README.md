@@ -11,6 +11,10 @@
 
 ### 2026/01/10
 
+- UX: users can view recipes
+- UI: added created and updated timestamps to recipe detail page
+- UX: users can add and view notes for recipes
+- BE: all recipes are public now for sharing with anyone
 - DX: created useHomeRecipes hook
 - DX: created useRecipe hook
 - UX: user can now create recipes

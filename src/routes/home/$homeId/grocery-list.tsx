@@ -5,6 +5,8 @@ import useHomeById from "@/hooks/use-home-by-id";
 import { Loader2 } from "lucide-react";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
 import { UnderConstructionImage } from "@/components/ui/under-construction-image";
+import { useAuthContext } from "@/components/auth/auth-provider";
+import { getUserRoleInHome } from "@/lib/utils";
 
 export const Route = createFileRoute("/home/$homeId/grocery-list")({
     component: GroceryListPage,
@@ -48,6 +50,8 @@ function GroceryListPage() {
     }
 
     const homeName = (home as { name: string } | null)?.name || "Home";
+    const { user } = useAuthContext();
+    const userRole = getUserRoleInHome(home, user?.id);
 
     return (
         <main className="container mx-auto px-4 py-8">
@@ -58,6 +62,7 @@ function GroceryListPage() {
                     { label: "Grocery List" },
                 ]}
                 className="mb-6"
+                role={userRole}
             />
             <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
                 <UnderConstructionImage />

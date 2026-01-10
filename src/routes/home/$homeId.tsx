@@ -8,7 +8,9 @@ import { HomeIcon, Loader2 } from "lucide-react";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
 import { JoinCodesList } from "@/components/home/join-codes-list";
 import { JoinRequestsList } from "@/components/home/join-requests-list";
+import { ManageMembersCard } from "@/components/home/manage-members-card";
 import { useAuthContext } from "@/components/auth/auth-provider";
+import { getUserRoleInHome } from "@/lib/utils";
 
 export const Route = createFileRoute("/home/$homeId")({
     component: HomeDashboard,
@@ -68,6 +70,8 @@ function HomeDashboard() {
     const expectedPath = `/home/${homeId}`;
     const isExactRoute = location.pathname === expectedPath;
     
+    const userRole = getUserRoleInHome(home, user?.id);
+    
     return (
         <div className="min-h-screen bg-background">
             <Navbar homeId={homeId} />
@@ -79,6 +83,7 @@ function HomeDashboard() {
                             { label: (home as { name: string } | null)?.name || "Home" },
                         ]}
                         className="mb-6"
+                        role={userRole}
                     />
                     <h1 className="mb-8 text-3xl! font-bold flex items-center">
                         <HomeIcon className="w-12 h-12 mr-2 inline-block text-primary" />{" "}
@@ -87,6 +92,7 @@ function HomeDashboard() {
                     <FeatureGrid homeId={homeId} />
                     {isOwnerOrAdmin && (
                         <div className="mt-8 space-y-6">
+                            <ManageMembersCard homeId={homeId} />
                             <JoinCodesList homeId={homeId} />
                             <JoinRequestsList homeId={homeId} />
                         </div>

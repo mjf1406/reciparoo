@@ -64,6 +64,7 @@ export function JoinRequestForm({
                                           { "owner.id": user.id },
                                           { "admins.id": user.id },
                                           { "homeMembers.id": user.id },
+                                          { "viewers.id": user.id },
                                       ],
                                   },
                               ],

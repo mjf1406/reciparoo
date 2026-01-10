@@ -19,6 +19,7 @@ export default function useHomeById(homeId: string) {
                                       { "owner.id": user.id },
                                       { "admins.id": user.id },
                                       { "homeMembers.id": user.id },
+                                      { "viewers.id": user.id },
                                   ],
                               },
                           ],
@@ -33,6 +34,7 @@ export default function useHomeById(homeId: string) {
                   owner: {},
                   admins: {},
                   homeMembers: {},
+                  viewers: {},
               },
           }
         : null;

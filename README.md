@@ -11,6 +11,8 @@
 
 ### 2026/01/10
 
+- UI: added manage member cards
+- UX: owners/admins can now manage members of their home
 - UX: user can now join homes using join codes
 - UI: adjusted nav user display name to be hidden on mobile and shown on desktop
 - UI: added under construction image to home child pages

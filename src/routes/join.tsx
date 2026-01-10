@@ -42,6 +42,7 @@ function JoinPage() {
                           owner: {},
                           admins: {},
                           homeMembers: {},
+                          viewers: {},
                       },
                       denied: {},
                       joinCodeRequests: {
@@ -63,6 +64,7 @@ function JoinPage() {
         home?.owner?.id === user?.id ||
         home?.admins?.some((u) => u.id === user?.id) ||
         home?.homeMembers?.some((u) => u.id === user?.id) ||
+        home?.viewers?.some((u) => u.id === user?.id) ||
         false;
 
     const hasPendingRequest =

@@ -32,6 +32,12 @@ const dataBind = [
     // User is still an admin of the data
     "isStillAdmin",
     "auth.id in newData.ref('admins.id')",
+    // User is a viewer of the home
+    "isViewer",
+    "auth.id in data.ref('viewers.id')",
+    // User is still a viewer of the home
+    "isStillViewer",
+    "auth.id in newData.ref('viewers.id')",
     // User is owner of the home that the join code belongs to
     "isJoinCodeHomeOwner",
     "auth.id in data.ref('home.owner.id')",
@@ -78,7 +84,7 @@ const rules = {
     homes: {
         allow: {
             create: "isAuthenticated",
-            view: "isAuthenticated && (isOwner || isAdmin || isHomeMember)",
+            view: "isAuthenticated && (isOwner || isAdmin || isHomeMember || isViewer)",
             update: "isAuthenticated && (isOwner || isAdmin)",
             delete: "isAuthenticated && isOwner",
         },

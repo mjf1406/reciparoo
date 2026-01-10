@@ -102,12 +102,14 @@ export default function AuthProvider({
                               { "owner.id": user.id },
                               { "admins.id": user.id },
                               { "homeMembers.id": user.id },
+                              { "viewers.id": user.id },
                           ],
                       },
                   },
                   owner: {},
                   admins: {},
                   homeMembers: {},
+                  viewers: {},
               },
           }
         : null;

@@ -98,6 +98,18 @@ const _schema = i.schema({
                 label: "memberHomes",
             }, // Each user can be a member of many homes
         },
+        homeViewers: {
+            forward: {
+                on: "homes",
+                has: "many",
+                label: "viewers",
+            }, // Each home can have many viewer users
+            reverse: {
+                on: "$users",
+                has: "many",
+                label: "viewerHomes",
+            }, // Each user can be a viewer of many homes
+        },
         // ------------------------
         //   Home Join Code Links
         // ------------------------

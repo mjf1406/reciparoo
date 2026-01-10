@@ -1,0 +1,33 @@
+{
+  "name": "Reciparoo",
+  "short_name": "Reciparoo",
+  "description": "Organize your recipes, plan meals, manage your pantry, and create grocery lists all in one place.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#f59e0b",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/logo-with-text.webp",
+      "sizes": "any",
+      "type": "image/webp",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo-with-text.webp",
+      "sizes": "192x192",
+      "type": "image/webp",
+      "purpose": "any"
+    },
+    {
+      "src": "/logo-with-text.webp",
+      "sizes": "512x512",
+      "type": "image/webp",
+      "purpose": "any"
+    }
+  ],
+  "categories": ["food", "lifestyle", "productivity"],
+  "screenshots": [],
+  "shortcuts": []
+}

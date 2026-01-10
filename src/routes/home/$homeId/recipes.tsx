@@ -78,13 +78,8 @@ function RecipesPage() {
     const expectedPath = `/home/${homeId}/recipes`;
     const isExactRoute = location.pathname === expectedPath;
 
-    // Check if user can create recipes (owner or admin)
-    const isOwnerOrAdmin =
-        user?.id &&
-        ((home as { owner?: { id: string } }).owner?.id === user.id ||
-            (home as { admins?: Array<{ id: string }> }).admins?.some(
-                (admin) => admin.id === user.id
-            ));
+    // Check if user can create recipes (all roles except viewer)
+    const canCreateRecipe = userRole && userRole !== "viewer";
 
     const handleCreateRecipe = () => {
         window.location.href = `/home/${homeId}/recipes/new`;
@@ -120,7 +115,7 @@ function RecipesPage() {
                                 : `${recipes.length} recipe${recipes.length !== 1 ? "s" : ""} in this home`}
                         </p>
                     </div>
-                    {isOwnerOrAdmin && (
+                    {canCreateRecipe && (
                         <Button onClick={handleCreateRecipe} size="lg">
                             <Plus className="mr-2 h-4 w-4" />
                             Create Recipe
@@ -136,7 +131,7 @@ function RecipesPage() {
                             Start building your recipe collection by creating your first
                             recipe.
                         </p>
-                        {isOwnerOrAdmin && (
+                        {canCreateRecipe && (
                             <Button onClick={handleCreateRecipe} size="lg">
                                 <Plus className="mr-2 h-4 w-4" />
                                 Create Your First Recipe

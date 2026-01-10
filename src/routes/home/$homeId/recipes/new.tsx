@@ -57,15 +57,10 @@ function NewRecipePage() {
     const homeName = (home as { name: string } | null)?.name || "Home";
     const userRole = getUserRoleInHome(home, user?.id);
 
-    // Check if user can create recipes (owner or admin)
-    const isOwnerOrAdmin =
-        user?.id &&
-        ((home as { owner?: { id: string } }).owner?.id === user.id ||
-            (home as { admins?: Array<{ id: string }> }).admins?.some(
-                (admin) => admin.id === user.id
-            ));
+    // Check if user can create recipes (all roles except viewer)
+    const canCreateRecipe = userRole && userRole !== "viewer";
 
-    if (!isOwnerOrAdmin) {
+    if (!canCreateRecipe) {
         return (
             <main className="container mx-auto px-4 py-8">
                 <Breadcrumb
@@ -83,7 +78,7 @@ function NewRecipePage() {
                         <p className="text-lg font-semibold mb-2">
                             Access Denied
                         </p>
-                        <p>You must be an owner or admin to create recipes.</p>
+                        <p>You must be an owner, admin, or member to create recipes. Viewers can only view recipes.</p>
                     </div>
                 </div>
             </main>

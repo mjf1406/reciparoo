@@ -1,12 +1,14 @@
 /** @format */
 
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Outlet, useLocation } from "@tanstack/react-router";
 import useHomeById from "@/hooks/use-home-by-id";
-import { Loader2 } from "lucide-react";
+import { Loader2, Plus, BookOpen } from "lucide-react";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
-import { UnderConstructionImage } from "@/components/ui/under-construction-image";
+import { Button } from "@/components/ui/button";
 import { useAuthContext } from "@/components/auth/auth-provider";
 import { getUserRoleInHome } from "@/lib/utils";
+import { db } from "@/lib/db/db";
+import { RecipeCard } from "@/components/recipes/recipe-card";
 
 export const Route = createFileRoute("/home/$homeId/recipes")({
     component: RecipesPage,
@@ -14,7 +16,27 @@ export const Route = createFileRoute("/home/$homeId/recipes")({
 
 function RecipesPage() {
     const { homeId } = Route.useParams();
-    const { home, isLoading, error } = useHomeById(homeId!);
+    const { home, isLoading: homeLoading, error: homeError } = useHomeById(homeId!);
+    const { user } = useAuthContext();
+    const location = useLocation();
+
+    // Query recipes for this home
+    const { data, isLoading: recipesLoading, error: recipesError } = db.useQuery(
+        user?.id
+            ? {
+                  recipes: {
+                      $: {
+                          where: { "home.id": homeId },
+                      },
+                      home: {},
+                  },
+              }
+            : null
+    );
+
+    const recipes = data?.recipes || [];
+    const isLoading = homeLoading || recipesLoading;
+    const error = homeError || recipesError;
 
     if (isLoading) {
         return (
@@ -50,8 +72,28 @@ function RecipesPage() {
     }
 
     const homeName = (home as { name: string } | null)?.name || "Home";
-    const { user } = useAuthContext();
     const userRole = getUserRoleInHome(home, user?.id);
+
+    // Check if we're on the exact route (no child route) by comparing pathname
+    const expectedPath = `/home/${homeId}/recipes`;
+    const isExactRoute = location.pathname === expectedPath;
+
+    // Check if user can create recipes (owner or admin)
+    const isOwnerOrAdmin =
+        user?.id &&
+        ((home as { owner?: { id: string } }).owner?.id === user.id ||
+            (home as { admins?: Array<{ id: string }> }).admins?.some(
+                (admin) => admin.id === user.id
+            ));
+
+    const handleCreateRecipe = () => {
+        window.location.href = `/home/${homeId}/recipes/new`;
+    };
+
+    // If not on exact route, render child routes
+    if (!isExactRoute) {
+        return <Outlet />;
+    }
 
     return (
         <main className="container mx-auto px-4 py-8">
@@ -64,8 +106,50 @@ function RecipesPage() {
                 className="mb-6"
                 role={userRole}
             />
-            <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
-                <UnderConstructionImage />
+
+            <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h1 className="text-3xl font-bold flex items-center">
+                            <BookOpen className="w-8 h-8 mr-2 inline-block text-primary" />
+                            Recipes
+                        </h1>
+                        <p className="text-muted-foreground mt-2">
+                            {recipes.length === 0
+                                ? "No recipes yet. Create your first recipe to get started!"
+                                : `${recipes.length} recipe${recipes.length !== 1 ? "s" : ""} in this home`}
+                        </p>
+                    </div>
+                    {isOwnerOrAdmin && (
+                        <Button onClick={handleCreateRecipe} size="lg">
+                            <Plus className="mr-2 h-4 w-4" />
+                            Create Recipe
+                        </Button>
+                    )}
+                </div>
+
+                {recipes.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center min-h-[60vh] text-center border-2 border-dashed rounded-lg p-12">
+                        <BookOpen className="w-16 h-16 text-muted-foreground mb-4" />
+                        <h2 className="text-2xl font-semibold mb-2">No recipes yet</h2>
+                        <p className="text-muted-foreground mb-6 max-w-md">
+                            Start building your recipe collection by creating your first
+                            recipe.
+                        </p>
+                        {isOwnerOrAdmin && (
+                            <Button onClick={handleCreateRecipe} size="lg">
+                                <Plus className="mr-2 h-4 w-4" />
+                                Create Your First Recipe
+                            </Button>
+                        )}
+                    </div>
+                ) : (
+                    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                        {recipes.map((recipe: any) => (
+                            <RecipeCard key={recipe.id} recipe={recipe as any} />
+                        ))}
+                    </div>
+                )}
             </div>
         </main>
     );

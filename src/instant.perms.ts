@@ -53,6 +53,21 @@ const dataBind = [
     // User created the join code request
     "isJoinCodeRequestCreator",
     "auth.id in data.ref('user.id')",
+    // User is owner of the home that the recipe belongs to
+    "isRecipeHomeOwner",
+    "auth.id in data.ref('home.owner.id')",
+    // User is admin of the home that the recipe belongs to
+    "isRecipeHomeAdmin",
+    "auth.id in data.ref('home.admins.id')",
+    // User is a member of the home that the recipe belongs to
+    "isRecipeHomeMember",
+    "auth.id in data.ref('home.homeMembers.id')",
+    // User is a viewer of the home that the recipe belongs to
+    "isRecipeHomeViewer",
+    "auth.id in data.ref('home.viewers.id')",
+    // Note: File home permissions would require querying the home separately
+    // For now, files are viewable by owner or if they belong to a home the user is part of
+    // This is simplified - in practice you might want to query the home to check membership
 ];
 
 const rules = {
@@ -64,9 +79,9 @@ const rules = {
     $files: {
         allow: {
             create: "isAuthenticated",
-            view: "isAuthenticated && isOwner",
-            update: "isAuthenticated && (data.ref('owner.id') == [] || (isOwner && isStillOwner))", // Allow update if: no owner yet (new file) OR you are the owner
-            delete: "isAuthenticated && isOwner",
+            view: "isAuthenticated && data.owner == auth.id", // Files are viewable by owner only (home-based access can be added later if needed)
+            update: "isAuthenticated && (data.owner == null || data.owner == '' || data.owner == auth.id)", // Allow update if: no owner yet (new file) OR you are the owner
+            delete: "isAuthenticated && data.owner == auth.id",
         },
         bind: dataBind,
     },
@@ -103,6 +118,15 @@ const rules = {
             view: "isAuthenticated && (isJoinCodeRequestCreator || isJoinCodeRequestHomeOwner || isJoinCodeRequestHomeAdmin)",
             update: "isAuthenticated && (isJoinCodeRequestHomeOwner || isJoinCodeRequestHomeAdmin)",
             delete: "isAuthenticated && (isJoinCodeRequestHomeOwner || isJoinCodeRequestHomeAdmin)",
+        },
+        bind: dataBind,
+    },
+    recipes: {
+        allow: {
+            create: "isAuthenticated && (isRecipeHomeOwner || isRecipeHomeAdmin)",
+            view: "isAuthenticated && (isRecipeHomeOwner || isRecipeHomeAdmin || isRecipeHomeMember || isRecipeHomeViewer)",
+            update: "isAuthenticated && (isRecipeHomeOwner || isRecipeHomeAdmin)",
+            delete: "isAuthenticated && (isRecipeHomeOwner || isRecipeHomeAdmin)",
         },
         bind: dataBind,
     },

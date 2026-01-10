@@ -9,6 +9,10 @@ const _schema = i.schema({
         $files: i.entity({
             path: i.string().unique().indexed(),
             url: i.string(),
+            owner: i.string().optional(),
+            home: i.string().optional(),
+            created: i.date().indexed().optional(),
+            updated: i.date().indexed().optional(),
         }),
         $users: i.entity({
             // System Columns
@@ -40,24 +44,38 @@ const _schema = i.schema({
             created: i.date().indexed(),
             updated: i.date().indexed(),
         }),
+        recipes: i.entity({
+            name: i.string().indexed(),
+            imageURL: i.string().optional(),
+            description: i.string().optional(),
+            diet: i.string().optional(),
+            prepTime: i.number().optional(),
+            cookTime: i.number().optional(),
+            ingredients: i.string().optional(),
+            equipment: i.string().optional(),
+            procedure: i.string().optional(),
+            source: i.string().optional(),
+            created: i.date().indexed(),
+            updated: i.date().indexed(),
+        }),
     },
     links: {
         // ------------------------
         //        User Links
         // ------------------------
-        userFiles: {
-            forward: {
-                on: "$files",
-                has: "one",
-                label: "owner",
-                onDelete: "cascade",
-            }, // Each file has one owner, which is a user id
-            reverse: {
-                on: "$users",
-                has: "many",
-                label: "files",
-            }, // Each user can have many files
-        },
+        // userFiles: {
+        //     forward: {
+        //         on: "$files",
+        //         has: "one",
+        //         label: "owner",
+        //         onDelete: "cascade",
+        //     }, // Each file has one owner, which is a user id
+        //     reverse: {
+        //         on: "$users",
+        //         has: "many",
+        //         label: "files",
+        //     }, // Each user can have many files
+        // },
         userHomes: {
             forward: {
                 on: "homes",
@@ -162,6 +180,22 @@ const _schema = i.schema({
                 on: "$users", // Each user
                 has: "many", // has many
                 label: "deniedJoinCodes", // denied join codes
+            },
+        },
+        // ------------------------
+        //      Recipe Links
+        // ------------------------
+        homeRecipes: {
+            forward: {
+                on: "recipes", // Each recipe
+                has: "one", // has one
+                label: "home", // home
+                onDelete: "cascade",
+            },
+            reverse: {
+                on: "homes", // Each home
+                has: "many", // has many
+                label: "recipes", // recipes
             },
         },
     },

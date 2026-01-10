@@ -16,6 +16,7 @@ import { Route as HomeHomeIdRecipesRouteImport } from './routes/home/$homeId/rec
 import { Route as HomeHomeIdPantryRouteImport } from './routes/home/$homeId/pantry'
 import { Route as HomeHomeIdGroceryListRouteImport } from './routes/home/$homeId/grocery-list'
 import { Route as HomeHomeIdCalendarRouteImport } from './routes/home/$homeId/calendar'
+import { Route as HomeHomeIdRecipesNewRouteImport } from './routes/home/$homeId/recipes/new'
 
 const JoinRoute = JoinRouteImport.update({
   id: '/join',
@@ -52,6 +53,11 @@ const HomeHomeIdCalendarRoute = HomeHomeIdCalendarRouteImport.update({
   path: '/calendar',
   getParentRoute: () => HomeHomeIdRoute,
 } as any)
+const HomeHomeIdRecipesNewRoute = HomeHomeIdRecipesNewRouteImport.update({
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => HomeHomeIdRecipesRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -60,7 +66,8 @@ export interface FileRoutesByFullPath {
   '/home/$homeId/calendar': typeof HomeHomeIdCalendarRoute
   '/home/$homeId/grocery-list': typeof HomeHomeIdGroceryListRoute
   '/home/$homeId/pantry': typeof HomeHomeIdPantryRoute
-  '/home/$homeId/recipes': typeof HomeHomeIdRecipesRoute
+  '/home/$homeId/recipes': typeof HomeHomeIdRecipesRouteWithChildren
+  '/home/$homeId/recipes/new': typeof HomeHomeIdRecipesNewRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -69,7 +76,8 @@ export interface FileRoutesByTo {
   '/home/$homeId/calendar': typeof HomeHomeIdCalendarRoute
   '/home/$homeId/grocery-list': typeof HomeHomeIdGroceryListRoute
   '/home/$homeId/pantry': typeof HomeHomeIdPantryRoute
-  '/home/$homeId/recipes': typeof HomeHomeIdRecipesRoute
+  '/home/$homeId/recipes': typeof HomeHomeIdRecipesRouteWithChildren
+  '/home/$homeId/recipes/new': typeof HomeHomeIdRecipesNewRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -79,7 +87,8 @@ export interface FileRoutesById {
   '/home/$homeId/calendar': typeof HomeHomeIdCalendarRoute
   '/home/$homeId/grocery-list': typeof HomeHomeIdGroceryListRoute
   '/home/$homeId/pantry': typeof HomeHomeIdPantryRoute
-  '/home/$homeId/recipes': typeof HomeHomeIdRecipesRoute
+  '/home/$homeId/recipes': typeof HomeHomeIdRecipesRouteWithChildren
+  '/home/$homeId/recipes/new': typeof HomeHomeIdRecipesNewRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -91,6 +100,7 @@ export interface FileRouteTypes {
     | '/home/$homeId/grocery-list'
     | '/home/$homeId/pantry'
     | '/home/$homeId/recipes'
+    | '/home/$homeId/recipes/new'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -100,6 +110,7 @@ export interface FileRouteTypes {
     | '/home/$homeId/grocery-list'
     | '/home/$homeId/pantry'
     | '/home/$homeId/recipes'
+    | '/home/$homeId/recipes/new'
   id:
     | '__root__'
     | '/'
@@ -109,6 +120,7 @@ export interface FileRouteTypes {
     | '/home/$homeId/grocery-list'
     | '/home/$homeId/pantry'
     | '/home/$homeId/recipes'
+    | '/home/$homeId/recipes/new'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -168,21 +180,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof HomeHomeIdCalendarRouteImport
       parentRoute: typeof HomeHomeIdRoute
     }
+    '/home/$homeId/recipes/new': {
+      id: '/home/$homeId/recipes/new'
+      path: '/new'
+      fullPath: '/home/$homeId/recipes/new'
+      preLoaderRoute: typeof HomeHomeIdRecipesNewRouteImport
+      parentRoute: typeof HomeHomeIdRecipesRoute
+    }
   }
 }
+
+interface HomeHomeIdRecipesRouteChildren {
+  HomeHomeIdRecipesNewRoute: typeof HomeHomeIdRecipesNewRoute
+}
+
+const HomeHomeIdRecipesRouteChildren: HomeHomeIdRecipesRouteChildren = {
+  HomeHomeIdRecipesNewRoute: HomeHomeIdRecipesNewRoute,
+}
+
+const HomeHomeIdRecipesRouteWithChildren =
+  HomeHomeIdRecipesRoute._addFileChildren(HomeHomeIdRecipesRouteChildren)
 
 interface HomeHomeIdRouteChildren {
   HomeHomeIdCalendarRoute: typeof HomeHomeIdCalendarRoute
   HomeHomeIdGroceryListRoute: typeof HomeHomeIdGroceryListRoute
   HomeHomeIdPantryRoute: typeof HomeHomeIdPantryRoute
-  HomeHomeIdRecipesRoute: typeof HomeHomeIdRecipesRoute
+  HomeHomeIdRecipesRoute: typeof HomeHomeIdRecipesRouteWithChildren
 }
 
 const HomeHomeIdRouteChildren: HomeHomeIdRouteChildren = {
   HomeHomeIdCalendarRoute: HomeHomeIdCalendarRoute,
   HomeHomeIdGroceryListRoute: HomeHomeIdGroceryListRoute,
   HomeHomeIdPantryRoute: HomeHomeIdPantryRoute,
-  HomeHomeIdRecipesRoute: HomeHomeIdRecipesRoute,
+  HomeHomeIdRecipesRoute: HomeHomeIdRecipesRouteWithChildren,
 }
 
 const HomeHomeIdRouteWithChildren = HomeHomeIdRoute._addFileChildren(

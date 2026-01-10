@@ -133,7 +133,7 @@ const rules = {
     recipes: {
         allow: {
             create: "isAuthenticated && (isRecipeHomeOwner || isRecipeHomeAdmin || isRecipeHomeMember || isRecipeHomeViewer)",
-            view: "isAuthenticated && (isRecipeHomeOwner || isRecipeHomeAdmin || isRecipeHomeMember || isRecipeHomeViewer)",
+            view: "true",
             update: "isAuthenticated && (isRecipeHomeOwner || isRecipeHomeAdmin || isRecipeHomeMember)",
             delete: "isAuthenticated && (isRecipeHomeOwner || isRecipeHomeAdmin || isRecipeHomeMember)",
         },

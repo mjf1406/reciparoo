@@ -11,6 +11,8 @@
 
 ### 2026/01/10
 
+- UI: instructions now supports multiple sections with titles and their own numbered steps
+- UI: added yield, serving size, and serving unit to recipe detail page
 - UX: users can view recipes
 - UI: added created and updated timestamps to recipe detail page
 - UX: users can add and view notes for recipes

@@ -1,5 +1,6 @@
 /** @format */
 
+import React from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import useHomeById from "@/hooks/use-home-by-id";
 import useRecipe from "@/hooks/use-recipe";
@@ -11,6 +12,8 @@ import {
     ExternalLink,
     RotateCcw,
     ChefHat,
+    Scale,
+    ChevronDown,
 } from "lucide-react";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
 import { useAuthContext } from "@/components/auth/auth-provider";
@@ -20,8 +23,16 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useRecipeTracking } from "@/hooks/use-recipe-tracking";
+import { useRecipeScale } from "@/hooks/use-recipe-scale";
 import { RecipeNotes } from "@/components/recipes/recipe-notes";
+import {
+    Collapsible,
+    CollapsibleContent,
+    CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 
 export const Route = createFileRoute("/home/$homeId/recipes/$recipeId/")({
     component: RecipeDetailPage,
@@ -38,6 +49,24 @@ interface ProcedureStep {
     instruction: string;
 }
 
+interface InstructionSection {
+    title: string;
+    steps: Array<{
+        step: number;
+        instruction: string;
+    }>;
+}
+
+// Type guard to detect old format
+function isOldFormat(data: any): data is ProcedureStep[] {
+    return (
+        Array.isArray(data) &&
+        data.length > 0 &&
+        "instruction" in data[0] &&
+        !("title" in data[0])
+    );
+}
+
 function RecipeDetailPage() {
     const { homeId, recipeId } = Route.useParams();
     const {
@@ -52,6 +81,7 @@ function RecipeDetailPage() {
     } = useRecipe(recipeId);
     const { user } = useAuthContext();
     const navigate = useNavigate();
+    const [isNutritionLabelOpen, setIsNutritionLabelOpen] = React.useState(false);
 
     const isLoading = homeLoading || recipeLoading;
     const error = homeError || recipeError;
@@ -63,9 +93,28 @@ function RecipeDetailPage() {
     const equipment: string[] = recipe?.equipment
         ? (JSON.parse(recipe.equipment) as string[])
         : [];
-    const procedureSteps: ProcedureStep[] = recipe?.procedure
-        ? (JSON.parse(recipe.procedure) as ProcedureStep[])
-        : [];
+    
+    // Parse procedure - handle both old and new formats
+    let procedureSteps: ProcedureStep[] = [];
+    let instructionSections: InstructionSection[] = [];
+    let isOldProcedureFormat = true;
+    
+    if (recipe?.procedure) {
+        try {
+            const parsed = JSON.parse(recipe.procedure);
+            if (isOldFormat(parsed)) {
+                procedureSteps = parsed;
+                isOldProcedureFormat = true;
+            } else {
+                instructionSections = parsed as InstructionSection[];
+                isOldProcedureFormat = false;
+            }
+        } catch (e) {
+            // If parsing fails, treat as empty
+            procedureSteps = [];
+            instructionSections = [];
+        }
+    }
 
     // Parse diet types
     const dietTypes = recipe?.diet
@@ -87,6 +136,143 @@ function RecipeDetailPage() {
     // Tracking hook
     const { toggleItem, resetSection, resetAll, isChecked } =
         useRecipeTracking(recipeId);
+
+    // Scale hook
+    const { scale, setScale, resetScale } = useRecipeScale(recipeId);
+
+    // Convert decimal to fraction parts (whole, numerator, denominator)
+    const decimalToFractionParts = (
+        decimal: number
+    ): { whole: number; num: number; den: number } | null => {
+        // Check for whole numbers
+        if (decimal % 1 === 0) {
+            return { whole: decimal, num: 0, den: 1 };
+        }
+
+        // Try to find a simple fraction
+        const tolerance = 0.001;
+        for (let denom = 2; denom <= 16; denom++) {
+            for (let num = 1; num < denom; num++) {
+                const value = num / denom;
+                if (Math.abs(decimal - value) < tolerance) {
+                    // Simplify the fraction
+                    const gcd = (a: number, b: number): number => {
+                        return b === 0 ? a : gcd(b, a % b);
+                    };
+                    const divisor = gcd(num, denom);
+                    const simplifiedNum = num / divisor;
+                    const simplifiedDenom = denom / divisor;
+                    return {
+                        whole: 0,
+                        num: simplifiedNum,
+                        den: simplifiedDenom,
+                    };
+                }
+            }
+        }
+
+        // Check for whole number + fraction
+        const whole = Math.floor(decimal);
+        const remainder = decimal - whole;
+        if (whole > 0 && remainder > 0) {
+            for (let denom = 2; denom <= 16; denom++) {
+                for (let num = 1; num < denom; num++) {
+                    const value = num / denom;
+                    if (Math.abs(remainder - value) < tolerance) {
+                        const gcd = (a: number, b: number): number => {
+                            return b === 0 ? a : gcd(b, a % b);
+                        };
+                        const divisor = gcd(num, denom);
+                        const simplifiedNum = num / divisor;
+                        const simplifiedDenom = denom / divisor;
+                        return {
+                            whole,
+                            num: simplifiedNum,
+                            den: simplifiedDenom,
+                        };
+                    }
+                }
+            }
+        }
+
+        return null;
+    };
+
+    // Format a number as a nicely formatted fraction component
+    const formatNumberAsFraction = (num: number): React.ReactNode => {
+        const parts = decimalToFractionParts(num);
+
+        if (!parts) {
+            // If no simple fraction found, return formatted decimal
+            return num.toFixed(2).replace(/\.?0+$/, "");
+        }
+
+        const { whole, num: numerator, den: denominator } = parts;
+
+        if (denominator === 1) {
+            // Whole number
+            return whole.toString();
+        }
+
+        if (whole === 0) {
+            // Just a fraction
+            return (
+                <span className="inline-flex items-baseline mr-1">
+                    <sup className="text-[0.7em] leading-none mr-0.5">
+                        {numerator}
+                    </sup>
+                    <span>⁄</span>
+                    <sub className="text-[0.7em] leading-none ml-0.5">
+                        {denominator}
+                    </sub>
+                </span>
+            );
+        }
+
+        // Whole number + fraction
+        return (
+            <span className="inline-flex items-baseline mr-1">
+                <span className="mr-1">{whole}</span>
+                <span className="inline-flex items-baseline">
+                    <sup className="text-[0.7em] leading-none mr-0.5">
+                        {numerator}
+                    </sup>
+                    <span>⁄</span>
+                    <sub className="text-[0.7em] leading-none ml-0.5">
+                        {denominator}
+                    </sub>
+                </span>
+            </span>
+        );
+    };
+
+    // Calculate scaled quantity with fraction formatting
+    const getScaledQuantity = (quantity: string): React.ReactNode => {
+        if (!quantity || quantity.trim() === "") return "";
+
+        // Try to parse as number
+        const num = parseFloat(quantity);
+        if (isNaN(num)) return quantity; // Return original if not a number
+
+        const scaled = num * scale;
+        return formatNumberAsFraction(scaled);
+    };
+
+    // Format original quantity to fraction if it's a decimal
+    const formatQuantity = (quantity: string): React.ReactNode => {
+        if (!quantity || quantity.trim() === "") return "";
+
+        const num = parseFloat(quantity);
+        if (isNaN(num)) return quantity;
+
+        return formatNumberAsFraction(num);
+    };
+
+    // Get scaled yield with fraction formatting
+    const getScaledYield = (yieldValue: number): React.ReactNode => {
+        const scaled = yieldValue * scale;
+        return formatNumberAsFraction(scaled);
+    };
 
     if (isLoading) {
         return (
@@ -213,7 +399,10 @@ function RecipeDetailPage() {
                                 )}
                             </div>
                         )}
-                        {(prepTime || cookTime) && (
+                        {(prepTime ||
+                            cookTime ||
+                            recipe.servingSize ||
+                            recipe.servingUnit) && (
                             <div className="flex items-center gap-4 text-muted-foreground">
                                 {prepTime && (
                                     <div className="flex items-center gap-1">
@@ -225,6 +414,21 @@ function RecipeDetailPage() {
                                     <div className="flex items-center gap-1">
                                         <Clock className="h-4 w-4" />
                                         <span>Cook: {cookTime}</span>
+                                    </div>
+                                )}
+                                {(recipe.servingSize || recipe.servingUnit) && (
+                                    <div className="flex items-center gap-1">
+                                        <Utensils className="h-4 w-4" />
+                                        <span>
+                                            Serving Size:{" "}
+                                            {recipe.servingSize
+                                                ? `${recipe.servingSize}${
+                                                      recipe.servingUnit
+                                                          ? ` ${recipe.servingUnit}`
+                                                          : ""
+                                                  }`
+                                                : recipe.servingUnit || ""}
+                                        </span>
                                     </div>
                                 )}
                             </div>
@@ -282,6 +486,44 @@ function RecipeDetailPage() {
                     )}
                 </div>
 
+                {/* Nutrition Label Image */}
+                {recipe.nutritionLabelImageURL && (
+                    <Collapsible
+                        open={isNutritionLabelOpen}
+                        onOpenChange={setIsNutritionLabelOpen}
+                    >
+                        <Card className="flex flex-col">
+                            <CardHeader>
+                                <CollapsibleTrigger className="w-full cursor-pointer hover:bg-muted/50 transition-colors -m-6 p-6 rounded-t-lg">
+                                    <div className="flex items-center justify-between">
+                                        <CardTitle className="text-lg font-semibold">
+                                            Nutrition Label
+                                        </CardTitle>
+                                        <ChevronDown
+                                            className={`h-5 w-5 text-muted-foreground transition-transform ${
+                                                isNutritionLabelOpen
+                                                    ? "transform rotate-180"
+                                                    : ""
+                                            }`}
+                                        />
+                                    </div>
+                                </CollapsibleTrigger>
+                            </CardHeader>
+                            <CollapsibleContent className="data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:slide-out-to-top-1 data-[state=open]:slide-in-from-top-1 overflow-hidden">
+                                <CardContent className="flex-1 flex items-center justify-center p-4 min-h-0">
+                                    <div className="w-full h-full flex items-center justify-center overflow-hidden rounded-lg">
+                                        <img
+                                            src={recipe.nutritionLabelImageURL}
+                                            alt={`${recipe.name} nutrition label`}
+                                            className="max-w-full max-h-full w-auto h-auto object-contain"
+                                        />
+                                    </div>
+                                </CardContent>
+                            </CollapsibleContent>
+                        </Card>
+                    </Collapsible>
+                )}
+
                 {/* Global Reset Button */}
                 <div className="flex justify-end">
                     <Button
@@ -295,65 +537,202 @@ function RecipeDetailPage() {
                     </Button>
                 </div>
 
-                {/* Ingredients Section */}
-                {ingredients.length > 0 && (
-                    <Card>
-                        <CardHeader>
-                            <div className="flex items-center justify-between">
-                                <CardTitle className="flex items-center gap-2">
-                                    <Utensils className="h-5 w-5" />
-                                    Ingredients
-                                </CardTitle>
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => resetSection("ingredients")}
-                                >
-                                    <RotateCcw className="h-4 w-4 mr-2" />
-                                    Reset
-                                </Button>
-                            </div>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="space-y-2">
-                                {ingredients.map((ingredient, index) => {
-                                    const checkboxId = `ingredient-${recipeId}-${index}`;
-                                    return (
-                                        <div
-                                            key={index}
-                                            className="flex items-center gap-3 py-2"
-                                        >
-                                            <Checkbox
-                                                id={checkboxId}
-                                                checked={isChecked(
-                                                    "ingredients",
-                                                    index
-                                                )}
-                                                onCheckedChange={() =>
-                                                    toggleItem(
+                {/* Ingredients and Scale */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* Ingredients Section */}
+                    {ingredients.length > 0 && (
+                        <Card>
+                            <CardHeader>
+                                <div className="flex items-center justify-between">
+                                    <CardTitle className="flex items-center gap-2">
+                                        <Utensils className="h-5 w-5" />
+                                        Ingredients
+                                    </CardTitle>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => resetSection("ingredients")}
+                                    >
+                                        <RotateCcw className="h-4 w-4 mr-2" />
+                                        Reset
+                                    </Button>
+                                </div>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="space-y-2">
+                                    {ingredients.map((ingredient, index) => {
+                                        const checkboxId = `ingredient-${recipeId}-${index}`;
+                                        return (
+                                            <div
+                                                key={index}
+                                                className="flex items-center gap-3 py-2"
+                                            >
+                                                <Checkbox
+                                                    id={checkboxId}
+                                                    checked={isChecked(
                                                         "ingredients",
                                                         index
-                                                    )
+                                                    )}
+                                                    onCheckedChange={() =>
+                                                        toggleItem(
+                                                            "ingredients",
+                                                            index
+                                                        )
+                                                    }
+                                                />
+                                                <label
+                                                    htmlFor={checkboxId}
+                                                    className="flex-1 cursor-pointer"
+                                                >
+                                                    <div className="flex items-baseline gap-2">
+                                                        <span className="font-medium">
+                                                            {scale !== 1 ? (
+                                                                <>
+                                                                    <span className="text-muted-foreground line-through text-sm">
+                                                                        {formatQuantity(
+                                                                            ingredient.quantity
+                                                                        )}
+                                                                    </span>
+                                                                    <span className="ml-1 text-primary font-semibold">
+                                                                        {getScaledQuantity(
+                                                                            ingredient.quantity
+                                                                        )}
+                                                                    </span>
+                                                                </>
+                                                            ) : (
+                                                                formatQuantity(
+                                                                    ingredient.quantity
+                                                                )
+                                                            )}{" "}
+                                                            {ingredient.unit &&
+                                                                ingredient.unit +
+                                                                    " "}
+                                                        </span>
+                                                        <span>
+                                                            {ingredient.name}
+                                                        </span>
+                                                    </div>
+                                                </label>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </CardContent>
+                        </Card>
+                    )}
+
+                    {/* Scale Card */}
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2">
+                                <Scale className="h-5 w-5" />
+                                Scale Recipe
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="space-y-4">
+                                <div className="flex items-center gap-4">
+                                    <div className="flex items-center gap-2 flex-1">
+                                        <Label
+                                            htmlFor="scale-input"
+                                            className="whitespace-nowrap"
+                                        >
+                                            Scale:
+                                        </Label>
+                                        <Input
+                                            id="scale-input"
+                                            type="number"
+                                            min="0.25"
+                                            max="10"
+                                            step="0.25"
+                                            value={scale}
+                                            onChange={(e) => {
+                                                const value = parseFloat(
+                                                    e.target.value
+                                                );
+                                                if (!isNaN(value)) {
+                                                    setScale(value);
                                                 }
-                                            />
-                                            <label
-                                                htmlFor={checkboxId}
-                                                className="flex-1 cursor-pointer"
+                                            }}
+                                            className="w-24"
+                                        />
+                                        <span className="text-sm text-muted-foreground">
+                                            x (0.25x - 10x)
+                                        </span>
+                                    </div>
+                                    {scale !== 1 && (
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={resetScale}
+                                            className="flex items-center gap-2"
+                                        >
+                                            <RotateCcw className="h-4 w-4" />
+                                            Reset to 1x
+                                        </Button>
+                                    )}
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <span className="text-sm text-muted-foreground whitespace-nowrap">
+                                        Quick scale:
+                                    </span>
+                                    <div className="flex gap-2">
+                                        {[2, 3, 4, 5].map((multiplier) => (
+                                            <Button
+                                                key={multiplier}
+                                                variant={
+                                                    scale === multiplier
+                                                        ? "default"
+                                                        : "outline"
+                                                }
+                                                size="sm"
+                                                onClick={() =>
+                                                    setScale(multiplier)
+                                                }
+                                                className="min-w-12"
                                             >
-                                                <span className="font-medium">
-                                                    {ingredient.quantity}{" "}
-                                                    {ingredient.unit &&
-                                                        ingredient.unit + " "}
+                                                {multiplier}x
+                                            </Button>
+                                        ))}
+                                    </div>
+                                </div>
+                                {/* Yield at bottom of scale card */}
+                                {recipe.yield && (
+                                    <div className="pt-4 border-t">
+                                        <div className="flex items-center gap-2">
+                                            <Utensils className="h-4 w-4 text-muted-foreground" />
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-sm font-medium">
+                                                    Yield:
                                                 </span>
-                                                <span>{ingredient.name}</span>
-                                            </label>
+                                                <span className="text-sm">
+                                                    {scale !== 1 ? (
+                                                        <>
+                                                            <span className="text-muted-foreground line-through">
+                                                                {formatNumberAsFraction(
+                                                                    recipe.yield
+                                                                )}
+                                                            </span>
+                                                            <span className="ml-1 text-primary font-semibold">
+                                                                {getScaledYield(
+                                                                    recipe.yield
+                                                                )}
+                                                            </span>
+                                                        </>
+                                                    ) : (
+                                                        formatNumberAsFraction(
+                                                            recipe.yield
+                                                        )
+                                                    )}
+                                                </span>
+                                            </div>
                                         </div>
-                                    );
-                                })}
+                                    </div>
+                                )}
                             </div>
                         </CardContent>
                     </Card>
-                )}
+                </div>
 
                 {/* Equipment Section */}
                 {equipment.length > 0 && (
@@ -411,7 +790,7 @@ function RecipeDetailPage() {
                 )}
 
                 {/* Procedure Section */}
-                {procedureSteps.length > 0 && (
+                {(procedureSteps.length > 0 || instructionSections.length > 0) && (
                     <Card>
                         <CardHeader>
                             <div className="flex items-center justify-between">
@@ -430,45 +809,109 @@ function RecipeDetailPage() {
                             </div>
                         </CardHeader>
                         <CardContent>
-                            <div className="space-y-4">
-                                {procedureSteps.map((step, index) => {
-                                    const checkboxId = `procedure-${recipeId}-${index}`;
-                                    return (
-                                        <div
-                                            key={index}
-                                            className="flex items-start gap-3"
-                                        >
-                                            <Checkbox
-                                                id={checkboxId}
-                                                checked={isChecked(
-                                                    "procedures",
-                                                    index
-                                                )}
-                                                onCheckedChange={() =>
-                                                    toggleItem(
+                            {isOldProcedureFormat ? (
+                                // Old format: flat list of steps
+                                <div className="space-y-4">
+                                    {procedureSteps.map((step, index) => {
+                                        const checkboxId = `procedure-${recipeId}-${index}`;
+                                        return (
+                                            <div
+                                                key={index}
+                                                className="flex items-start gap-3"
+                                            >
+                                                <Checkbox
+                                                    id={checkboxId}
+                                                    checked={isChecked(
                                                         "procedures",
                                                         index
-                                                    )
-                                                }
-                                                className="mt-1"
-                                            />
-                                            <label
-                                                htmlFor={checkboxId}
-                                                className="flex-1 cursor-pointer"
-                                            >
-                                                <div className="flex items-start gap-2">
-                                                    <span className="font-semibold text-primary shrink-0">
-                                                        {step.step}.
-                                                    </span>
-                                                    <p className="text-sm leading-relaxed">
-                                                        {step.instruction}
-                                                    </p>
+                                                    )}
+                                                    onCheckedChange={() =>
+                                                        toggleItem(
+                                                            "procedures",
+                                                            index
+                                                        )
+                                                    }
+                                                    className="mt-1"
+                                                />
+                                                <label
+                                                    htmlFor={checkboxId}
+                                                    className="flex-1 cursor-pointer"
+                                                >
+                                                    <div className="flex items-start gap-2">
+                                                        <span className="font-semibold text-primary shrink-0">
+                                                            {step.step}.
+                                                        </span>
+                                                        <p className="text-sm leading-relaxed">
+                                                            {step.instruction}
+                                                        </p>
+                                                    </div>
+                                                </label>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            ) : (
+                                // New format: sections with steps
+                                <div className="space-y-6">
+                                    {instructionSections.map((section, sectionIndex) => {
+                                        // Calculate global step index for tracking
+                                        let globalStepIndex = 0;
+                                        for (let i = 0; i < sectionIndex; i++) {
+                                            globalStepIndex += instructionSections[i].steps.length;
+                                        }
+                                        
+                                        return (
+                                            <div key={sectionIndex} className="space-y-3">
+                                                {section.title && (
+                                                    <h3 className="text-lg font-semibold text-foreground border-b pb-2">
+                                                        {section.title}
+                                                    </h3>
+                                                )}
+                                                <div className="space-y-4 pl-4">
+                                                    {section.steps.map((step, stepIndex) => {
+                                                        const currentGlobalIndex = globalStepIndex + stepIndex;
+                                                        const checkboxId = `procedure-${recipeId}-${sectionIndex}-${stepIndex}`;
+                                                        return (
+                                                            <div
+                                                                key={stepIndex}
+                                                                className="flex items-start gap-3"
+                                                            >
+                                                                <Checkbox
+                                                                    id={checkboxId}
+                                                                    checked={isChecked(
+                                                                        "procedures",
+                                                                        currentGlobalIndex
+                                                                    )}
+                                                                    onCheckedChange={() =>
+                                                                        toggleItem(
+                                                                            "procedures",
+                                                                            currentGlobalIndex
+                                                                        )
+                                                                    }
+                                                                    className="mt-1"
+                                                                />
+                                                                <label
+                                                                    htmlFor={checkboxId}
+                                                                    className="flex-1 cursor-pointer"
+                                                                >
+                                                                    <div className="flex items-start gap-2">
+                                                                        <span className="font-semibold text-primary shrink-0">
+                                                                            {step.step}.
+                                                                        </span>
+                                                                        <p className="text-sm leading-relaxed">
+                                                                            {step.instruction}
+                                                                        </p>
+                                                                    </div>
+                                                                </label>
+                                                            </div>
+                                                        );
+                                                    })}
                                                 </div>
-                                            </label>
-                                        </div>
-                                    );
-                                })}
-                            </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
                         </CardContent>
                     </Card>
                 )}

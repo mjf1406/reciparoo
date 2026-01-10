@@ -45,15 +45,38 @@ interface ProcedureStep {
     instruction: string;
 }
 
+interface InstructionSection {
+    title: string;
+    steps: Array<{
+        step: number;
+        instruction: string;
+    }>;
+}
+
+// Type guard to detect old format
+function isOldFormat(data: any): data is ProcedureStep[] {
+    return (
+        Array.isArray(data) &&
+        data.length > 0 &&
+        "instruction" in data[0] &&
+        !("title" in data[0])
+    );
+}
+
 interface RecipeFormProps {
     onSubmit: (data: {
         name: string;
         imageFile?: File;
         imageURL?: string;
+        nutritionLabelFile?: File;
+        nutritionLabelImageURL?: string;
         description?: string;
         diet?: string;
         prepTime?: number;
         cookTime?: number;
+        yield?: number;
+        servingSize?: number;
+        servingUnit?: string;
         ingredients: string;
         equipment: string;
         procedure: string;
@@ -64,10 +87,14 @@ interface RecipeFormProps {
     initialData?: {
         name?: string;
         imageURL?: string;
+        nutritionLabelImageURL?: string;
         description?: string;
         diet?: string;
         prepTime?: number;
         cookTime?: number;
+        yield?: number;
+        servingSize?: number;
+        servingUnit?: string;
         ingredients?: string;
         equipment?: string;
         procedure?: string;
@@ -89,6 +116,12 @@ export function RecipeForm({
         initialData?.imageURL || null
     );
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const [nutritionLabelImageURL] = useState(initialData?.nutritionLabelImageURL || "");
+    const [nutritionLabelFile, setNutritionLabelFile] = useState<File | null>(null);
+    const [nutritionLabelPreview, setNutritionLabelPreview] = useState<string | null>(
+        initialData?.nutritionLabelImageURL || null
+    );
+    const nutritionLabelFileInputRef = useRef<HTMLInputElement>(null);
     const [selectedDiets, setSelectedDiets] = useState<string[]>(
         initialData?.diet ? initialData.diet.split(",").map((d) => d.trim()) : []
     );
@@ -97,6 +130,15 @@ export function RecipeForm({
     );
     const [cookTime, setCookTime] = useState<string>(
         initialData?.cookTime?.toString() || ""
+    );
+    const [yieldValue, setYieldValue] = useState<string>(
+        initialData?.yield?.toString() || ""
+    );
+    const [servingSize, setServingSize] = useState<string>(
+        initialData?.servingSize?.toString() || ""
+    );
+    const [servingUnit, setServingUnit] = useState<string>(
+        initialData?.servingUnit || ""
     );
     const [ingredients, setIngredients] = useState<Ingredient[]>(
         initialData?.ingredients
@@ -108,10 +150,37 @@ export function RecipeForm({
             ? (JSON.parse(initialData.equipment) as string[])
             : [""]
     );
-    const [procedureSteps, setProcedureSteps] = useState<ProcedureStep[]>(
-        initialData?.procedure
-            ? (JSON.parse(initialData.procedure) as ProcedureStep[])
-            : [{ step: 1, instruction: "" }]
+    // Initialize instruction sections - handle both old and new formats
+    const initializeInstructionSections = (): InstructionSection[] => {
+        if (!initialData?.procedure) {
+            return [{ title: "", steps: [{ step: 1, instruction: "" }] }];
+        }
+        
+        try {
+            const parsed = JSON.parse(initialData.procedure);
+            if (isOldFormat(parsed)) {
+                // Convert old format to new format (single section titled "Instructions")
+                return [
+                    {
+                        title: "Instructions",
+                        steps: parsed.map((step) => ({
+                            step: step.step,
+                            instruction: step.instruction,
+                        })),
+                    },
+                ];
+            } else {
+                // Already in new format
+                return parsed as InstructionSection[];
+            }
+        } catch (e) {
+            // If parsing fails, return default
+            return [{ title: "", steps: [{ step: 1, instruction: "" }] }];
+        }
+    };
+
+    const [instructionSections, setInstructionSections] = useState<InstructionSection[]>(
+        initializeInstructionSections
     );
     const [source, setSource] = useState(initialData?.source || "");
 
@@ -150,6 +219,32 @@ export function RecipeForm({
         reader.readAsDataURL(file);
     };
 
+    const handleNutritionLabelFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        // Validate file type
+        if (!file.type.startsWith("image/")) {
+            alert("Please select an image file");
+            return;
+        }
+
+        // Validate file size (e.g., max 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            alert("Image size must be less than 5MB");
+            return;
+        }
+
+        setNutritionLabelFile(file);
+
+        // Create preview
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            setNutritionLabelPreview(reader.result as string);
+        };
+        reader.readAsDataURL(file);
+    };
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (!name.trim()) return;
@@ -168,19 +263,29 @@ export function RecipeForm({
             name: name.trim(),
             imageFile: imageFile || undefined,
             imageURL: imageURL.trim() || undefined,
+            nutritionLabelFile: nutritionLabelFile || undefined,
+            nutritionLabelImageURL: nutritionLabelImageURL.trim() || undefined,
             description: description.trim() || undefined,
             diet: selectedDiets.length > 0 ? selectedDiets.join(",") : undefined,
             prepTime: prepTime ? parseInt(prepTime, 10) : undefined,
             cookTime: cookTime ? parseInt(cookTime, 10) : undefined,
+            yield: yieldValue ? parseInt(yieldValue, 10) : undefined,
+            servingSize: servingSize ? parseInt(servingSize, 10) : undefined,
+            servingUnit: servingUnit.trim() || undefined,
             ingredients: JSON.stringify(ingredientsData),
             equipment: JSON.stringify(equipmentData),
             procedure: JSON.stringify(
-                procedureSteps
-                    .filter((step) => step.instruction.trim())
-                    .map((step, index) => ({
-                        step: index + 1,
-                        instruction: step.instruction.trim(),
+                instructionSections
+                    .map((section) => ({
+                        title: section.title.trim(),
+                        steps: section.steps
+                            .filter((step) => step.instruction.trim())
+                            .map((step, index) => ({
+                                step: index + 1,
+                                instruction: step.instruction.trim(),
+                            })),
                     }))
+                    .filter((section) => section.steps.length > 0)
             ),
             source: source.trim() || undefined,
         });
@@ -218,29 +323,68 @@ export function RecipeForm({
         setEquipment(updated);
     };
 
-    const addProcedureStep = () => {
-        setProcedureSteps([
-            ...procedureSteps,
-            { step: procedureSteps.length + 1, instruction: "" },
+    // Section management functions
+    const addSection = () => {
+        setInstructionSections([
+            ...instructionSections,
+            { title: "", steps: [{ step: 1, instruction: "" }] },
         ]);
     };
 
-    const removeProcedureStep = (index: number) => {
-        if (procedureSteps.length > 1) {
-            const updated = procedureSteps.filter((_, i) => i !== index);
-            // Renumber steps
-            const renumbered = updated.map((step, i) => ({
-                step: i + 1,
-                instruction: step.instruction,
-            }));
-            setProcedureSteps(renumbered);
+    const removeSection = (sectionIndex: number) => {
+        if (instructionSections.length > 1) {
+            setInstructionSections(
+                instructionSections.filter((_, i) => i !== sectionIndex)
+            );
         }
     };
 
-    const updateProcedureStep = (index: number, instruction: string) => {
-        const updated = [...procedureSteps];
-        updated[index] = { ...updated[index], instruction };
-        setProcedureSteps(updated);
+    const updateSectionTitle = (sectionIndex: number, title: string) => {
+        const updated = [...instructionSections];
+        updated[sectionIndex] = { ...updated[sectionIndex], title };
+        setInstructionSections(updated);
+    };
+
+    // Step management functions
+    const addStep = (sectionIndex: number) => {
+        const updated = [...instructionSections];
+        const section = updated[sectionIndex];
+        updated[sectionIndex] = {
+            ...section,
+            steps: [
+                ...section.steps,
+                { step: section.steps.length + 1, instruction: "" },
+            ],
+        };
+        setInstructionSections(updated);
+    };
+
+    const removeStep = (sectionIndex: number, stepIndex: number) => {
+        const updated = [...instructionSections];
+        const section = updated[sectionIndex];
+        if (section.steps.length > 1) {
+            const filteredSteps = section.steps.filter((_, i) => i !== stepIndex);
+            // Renumber steps
+            const renumbered = filteredSteps.map((step, i) => ({
+                step: i + 1,
+                instruction: step.instruction,
+            }));
+            updated[sectionIndex] = { ...section, steps: renumbered };
+            setInstructionSections(updated);
+        }
+    };
+
+    const updateStep = (
+        sectionIndex: number,
+        stepIndex: number,
+        instruction: string
+    ) => {
+        const updated = [...instructionSections];
+        updated[sectionIndex].steps[stepIndex] = {
+            ...updated[sectionIndex].steps[stepIndex],
+            instruction,
+        };
+        setInstructionSections(updated);
     };
 
     return (
@@ -296,6 +440,48 @@ export function RecipeForm({
                         <ImageSkeleton
                             src={imagePreview}
                             alt="Recipe preview"
+                            className="rounded-lg"
+                            aspectRatio="16/9"
+                        />
+                    </div>
+                )}
+            </div>
+
+            {/* Nutrition Label Image Upload */}
+            <div className="space-y-2">
+                <Label htmlFor="nutritionLabelImageFile">Nutrition Label Image</Label>
+                <div className="flex gap-2">
+                    <Input
+                        ref={nutritionLabelFileInputRef}
+                        id="nutritionLabelImageFile"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleNutritionLabelFileChange}
+                        disabled={isLoading}
+                        className="flex-1"
+                    />
+                    {nutritionLabelFile && (
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => {
+                                setNutritionLabelFile(null);
+                                setNutritionLabelPreview(initialData?.nutritionLabelImageURL || null);
+                                if (nutritionLabelFileInputRef.current) {
+                                    nutritionLabelFileInputRef.current.value = "";
+                                }
+                            }}
+                            disabled={isLoading}
+                        >
+                            <X className="h-4 w-4" />
+                        </Button>
+                    )}
+                </div>
+                {nutritionLabelPreview && (
+                    <div className="mt-2 w-full max-w-xs">
+                        <ImageSkeleton
+                            src={nutritionLabelPreview}
+                            alt="Nutrition label preview"
                             className="rounded-lg"
                             aspectRatio="16/9"
                         />
@@ -383,6 +569,47 @@ export function RecipeForm({
                         disabled={isLoading}
                     />
                 </div>
+            </div>
+
+            {/* Yield and Serving Size */}
+            <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                    <Label htmlFor="yield">Yield</Label>
+                    <Input
+                        id="yield"
+                        type="number"
+                        min="0"
+                        value={yieldValue}
+                        onChange={(e) => setYieldValue(e.target.value)}
+                        placeholder="12"
+                        disabled={isLoading}
+                    />
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="servingSize">Serving Size</Label>
+                    <Input
+                        id="servingSize"
+                        type="number"
+                        min="0"
+                        value={servingSize}
+                        onChange={(e) => setServingSize(e.target.value)}
+                        placeholder="4"
+                        disabled={isLoading}
+                    />
+                </div>
+            </div>
+
+            {/* Serving Unit */}
+            <div className="space-y-2">
+                <Label htmlFor="servingUnit">Serving Unit</Label>
+                <Input
+                    id="servingUnit"
+                    type="text"
+                    value={servingUnit}
+                    onChange={(e) => setServingUnit(e.target.value)}
+                    placeholder="e.g., tortilla, cup, grams, slice"
+                    disabled={isLoading}
+                />
             </div>
 
             {/* Ingredients */}
@@ -486,49 +713,114 @@ export function RecipeForm({
                 </div>
             </div>
 
-            {/* Procedure */}
-            <div className="space-y-2">
+            {/* Procedure / Instructions */}
+            <div className="space-y-4">
                 <Label>Procedure / Instructions</Label>
-                <div className="space-y-3">
-                    {procedureSteps.map((step, index) => (
-                        <div key={index} className="flex gap-2 items-start">
-                            <div className="shrink-0 pt-2 text-sm font-medium text-muted-foreground">
-                                {step.step}.
+                <div className="space-y-6">
+                    {instructionSections.map((section, sectionIndex) => (
+                        <div
+                            key={sectionIndex}
+                            className="border rounded-lg p-4 space-y-4 bg-muted/30"
+                        >
+                            {/* Section Header */}
+                            <div className="flex items-center gap-2">
+                                <Input
+                                    placeholder="Section title (e.g., Mix the Dough)"
+                                    value={section.title}
+                                    onChange={(e) =>
+                                        updateSectionTitle(
+                                            sectionIndex,
+                                            e.target.value
+                                        )
+                                    }
+                                    disabled={isLoading}
+                                    className="flex-1 font-semibold"
+                                />
+                                {instructionSections.length > 1 && (
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={() => removeSection(sectionIndex)}
+                                        disabled={isLoading}
+                                    >
+                                        <Trash2 className="h-4 w-4" />
+                                        <span className="sr-only">
+                                            Remove section
+                                        </span>
+                                    </Button>
+                                )}
                             </div>
-                            <Textarea
-                                placeholder={`Step ${step.step} instruction...`}
-                                value={step.instruction}
-                                onChange={(e) =>
-                                    updateProcedureStep(index, e.target.value)
-                                }
-                                disabled={isLoading}
-                                rows={3}
-                                className="flex-1"
-                            />
-                            {procedureSteps.length > 1 && (
+
+                            {/* Steps within section */}
+                            <div className="space-y-3 pl-4 border-l-2 border-primary/20">
+                                {section.steps.map((step, stepIndex) => (
+                                    <div
+                                        key={stepIndex}
+                                        className="flex gap-2 items-start"
+                                    >
+                                        <div className="shrink-0 pt-2 text-sm font-medium text-muted-foreground">
+                                            {step.step}.
+                                        </div>
+                                        <Textarea
+                                            placeholder={`Step ${step.step} instruction...`}
+                                            value={step.instruction}
+                                            onChange={(e) =>
+                                                updateStep(
+                                                    sectionIndex,
+                                                    stepIndex,
+                                                    e.target.value
+                                                )
+                                            }
+                                            disabled={isLoading}
+                                            rows={3}
+                                            className="flex-1"
+                                        />
+                                        {section.steps.length > 1 && (
+                                            <Button
+                                                type="button"
+                                                variant="ghost"
+                                                size="icon"
+                                                onClick={() =>
+                                                    removeStep(
+                                                        sectionIndex,
+                                                        stepIndex
+                                                    )
+                                                }
+                                                disabled={isLoading}
+                                                className="mt-2"
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                                <span className="sr-only">
+                                                    Remove step
+                                                </span>
+                                            </Button>
+                                        )}
+                                    </div>
+                                ))}
                                 <Button
                                     type="button"
-                                    variant="ghost"
-                                    size="icon"
-                                    onClick={() => removeProcedureStep(index)}
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => addStep(sectionIndex)}
                                     disabled={isLoading}
-                                    className="mt-2"
+                                    className="w-full"
                                 >
-                                    <Trash2 className="h-4 w-4" />
-                                    <span className="sr-only">Remove step</span>
+                                    <Plus className="mr-2 h-4 w-4" />
+                                    Add Step to Section
                                 </Button>
-                            )}
+                            </div>
                         </div>
                     ))}
                     <Button
                         type="button"
                         variant="outline"
-                        onClick={addProcedureStep}
+                        onClick={addSection}
                         disabled={isLoading}
                         className="w-full"
                     >
                         <Plus className="mr-2 h-4 w-4" />
-                        Add Step
+                        Add Section
                     </Button>
                 </div>
             </div>

@@ -116,10 +116,15 @@ function EditRecipePage() {
         name: string;
         imageFile?: File;
         imageURL?: string;
+        nutritionLabelFile?: File;
+        nutritionLabelImageURL?: string;
         description?: string;
         diet?: string;
         prepTime?: number;
         cookTime?: number;
+        yield?: number;
+        servingSize?: number;
+        servingUnit?: string;
         ingredients: string;
         equipment: string;
         procedure: string;
@@ -131,6 +136,7 @@ function EditRecipePage() {
 
             // Start with existing image URL, will be updated if new file is uploaded
             let finalImageURL = recipe.imageURL;
+            let finalNutritionLabelImageURL = recipe.nutritionLabelImageURL;
 
             // If we have a new file, upload it, wait for ID, then fetch URL
             if (formData.imageFile && user?.id) {
@@ -215,16 +221,103 @@ function EditRecipePage() {
                 }
             }
 
+            // If we have a new nutrition label file, upload it, wait for ID, then fetch URL
+            if (formData.nutritionLabelFile && user?.id) {
+                try {
+                    // Step 1: Upload the file
+                    const filePath = `recipes/${recipeId}/nutrition-label-${Date.now()}-${formData.nutritionLabelFile.name}`;
+                    const uploadResult = await db.storage.uploadFile(
+                        filePath,
+                        formData.nutritionLabelFile
+                    );
+
+                    // Step 2: Get the file ID from upload response
+                    const fileId = uploadResult?.data?.id;
+
+                    if (!fileId) {
+                        throw new Error("File upload did not return an ID");
+                    }
+
+                    // Step 3: Set owner and home links on the file using chained links
+                    const fileNow = new Date();
+                    db.transact(
+                        db.tx.$files[fileId]
+                            .update({
+                                created: fileNow,
+                                updated: fileNow,
+                            })
+                            .link({ owner: user.id })
+                            .link({ home: homeId })
+                    );
+
+                    // Step 4: Wait a moment for the file to be available in the database
+                    await new Promise((resolve) => setTimeout(resolve, 500));
+
+                    // Step 5: Fetch the file from $files entity to get the URL
+                    let fileData = null;
+                    let retries = 3;
+
+                    while (retries > 0 && !fileData?.$files?.[0]?.url) {
+                        try {
+                            const result = await db.queryOnce({
+                                $files: {
+                                    $: { where: { id: fileId } },
+                                },
+                            });
+
+                            if (result?.data?.$files?.[0]?.url) {
+                                fileData = result.data;
+                                break;
+                            }
+                        } catch (error) {
+                            console.warn("Error fetching file:", error);
+                        }
+
+                        // Wait before retrying
+                        if (retries > 1) {
+                            await new Promise((resolve) =>
+                                setTimeout(resolve, 500)
+                            );
+                        }
+                        retries--;
+                    }
+
+                    if (fileData?.$files?.[0]?.url) {
+                        finalNutritionLabelImageURL = fileData.$files[0].url;
+                        console.log(
+                            "Fetched nutrition label file URL from $files:",
+                            finalNutritionLabelImageURL
+                        );
+                    } else {
+                        console.error(
+                            "Nutrition label file URL not found in $files entity after retries"
+                        );
+                        alert(
+                            "Failed to retrieve uploaded nutrition label image URL. Please try again."
+                        );
+                        return;
+                    }
+                } catch (error) {
+                    console.error("Error uploading nutrition label image:", error);
+                    alert("Failed to upload nutrition label image. Please try again.");
+                    return;
+                }
+            }
+
             // Update the recipe, preserving created timestamp
             db.transact(
                 db.tx.recipes[recipeId]
                     .update({
                         name: formData.name,
                         imageURL: finalImageURL,
+                        nutritionLabelImageURL: finalNutritionLabelImageURL,
                         description: formData.description,
                         diet: formData.diet,
                         prepTime: formData.prepTime,
                         cookTime: formData.cookTime,
+                        yield: formData.yield,
+                        servingSize: formData.servingSize,
+                        servingUnit: formData.servingUnit,
                         ingredients: formData.ingredients,
                         equipment: formData.equipment,
                         procedure: formData.procedure,
@@ -261,10 +354,14 @@ function EditRecipePage() {
     const initialData = {
         name: recipe.name,
         imageURL: recipe.imageURL,
+        nutritionLabelImageURL: recipe.nutritionLabelImageURL,
         description: recipe.description,
         diet: recipe.diet,
         prepTime: recipe.prepTime,
         cookTime: recipe.cookTime,
+        yield: recipe.yield,
+        servingSize: recipe.servingSize,
+        servingUnit: recipe.servingUnit,
         ingredients: recipe.ingredients,
         equipment: recipe.equipment,
         procedure: recipe.procedure,
@@ -278,7 +375,7 @@ function EditRecipePage() {
                     { label: "Home", to: "/" },
                     { label: homeName, to: `/home/${homeId}` },
                     { label: "Recipes", to: `/home/${homeId}/recipes` },
-                    { label: recipe.name || "Recipe" },
+                    { label: recipe.name || "Recipe", to: `/home/${homeId}/recipes/${recipeId}` },
                     { label: "Edit" },
                 ]}
                 className="mb-6"

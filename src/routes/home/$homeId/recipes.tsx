@@ -28,7 +28,12 @@ function RecipesPage() {
                       $: {
                           where: { "home.id": homeId },
                       },
-                      home: {},
+                      home: {
+                          owner: {},
+                          admins: {},
+                          homeMembers: {},
+                          viewers: {},
+                      },
                   },
               }
             : null

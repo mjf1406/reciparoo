@@ -13,6 +13,8 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ImageSkeleton } from "@/components/ui/image-skeleton";
+import { RecipeActionMenu } from "./recipe-action-menu";
+import { useAuthContext } from "@/components/auth/auth-provider";
 import type { InstaQLEntity } from "@instantdb/react";
 import type { AppSchema } from "@/instant.schema";
 
@@ -23,6 +25,8 @@ interface RecipeCardProps {
 }
 
 export function RecipeCard({ recipe }: RecipeCardProps) {
+    const { user } = useAuthContext();
+
     // Parse ingredients and equipment from JSON strings
     const ingredients = recipe.ingredients
         ? (JSON.parse(recipe.ingredients) as Array<{
@@ -53,7 +57,15 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
     const cookTime = formatTime(recipe.cookTime);
 
     return (
-        <Card className="transition-all hover:shadow-lg hover:scale-[1.02] flex flex-col">
+        <Card className="transition-all hover:shadow-lg hover:scale-[1.02] flex flex-col relative">
+            {/* Recipe Action Menu */}
+            <div
+                className="absolute top-4 right-4 z-10"
+                onClick={(e) => e.stopPropagation()}
+            >
+                <RecipeActionMenu recipe={recipe} userId={user?.id} />
+            </div>
+
             {/* Recipe Image */}
             {recipe.imageURL && (
                 <div className="w-full h-48 overflow-hidden rounded-t-xl">

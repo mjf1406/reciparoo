@@ -11,6 +11,8 @@
 
 ### 2026/01/10
 
+- UX: user can now create recipes
+- UX: user can now edit and delete recipes
 - UI: added manage member cards
 - UX: owners/admins can now manage members of their home
 - UX: user can now join homes using join codes

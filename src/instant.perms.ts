@@ -65,9 +65,18 @@ const dataBind = [
     // User is a viewer of the home that the recipe belongs to
     "isRecipeHomeViewer",
     "auth.id in data.ref('home.viewers.id')",
-    // Note: File home permissions would require querying the home separately
-    // For now, files are viewable by owner or if they belong to a home the user is part of
-    // This is simplified - in practice you might want to query the home to check membership
+    // User is owner of the home that the file belongs to
+    "isFileHomeOwner",
+    "auth.id in data.ref('home.owner.id')",
+    // User is admin of the home that the file belongs to
+    "isFileHomeAdmin",
+    "auth.id in data.ref('home.admins.id')",
+    // User is a member of the home that the file belongs to
+    "isFileHomeMember",
+    "auth.id in data.ref('home.homeMembers.id')",
+    // User is a viewer of the home that the file belongs to
+    "isFileHomeViewer",
+    "auth.id in data.ref('home.viewers.id')",
 ];
 
 const rules = {
@@ -79,9 +88,9 @@ const rules = {
     $files: {
         allow: {
             create: "isAuthenticated",
-            view: "isAuthenticated && data.owner == auth.id", // Files are viewable by owner only (home-based access can be added later if needed)
-            update: "isAuthenticated && (data.owner == null || data.owner == '' || data.owner == auth.id)", // Allow update if: no owner yet (new file) OR you are the owner
-            delete: "isAuthenticated && data.owner == auth.id",
+            view: "isAuthenticated && (auth.id in data.ref('owner.id') || isFileHomeOwner || isFileHomeAdmin || isFileHomeMember || isFileHomeViewer)",
+            update: "isAuthenticated && (data.ref('owner.id') == [] || (auth.id in data.ref('owner.id') && auth.id in newData.ref('owner.id')))", // Allow update if: no owner yet (new file) OR you are the owner and remain the owner
+            delete: "isAuthenticated && auth.id in data.ref('owner.id')",
         },
         bind: dataBind,
     },
@@ -123,10 +132,10 @@ const rules = {
     },
     recipes: {
         allow: {
-            create: "isAuthenticated && (isRecipeHomeOwner || isRecipeHomeAdmin)",
+            create: "isAuthenticated && (isRecipeHomeOwner || isRecipeHomeAdmin || isRecipeHomeMember || isRecipeHomeViewer)",
             view: "isAuthenticated && (isRecipeHomeOwner || isRecipeHomeAdmin || isRecipeHomeMember || isRecipeHomeViewer)",
-            update: "isAuthenticated && (isRecipeHomeOwner || isRecipeHomeAdmin)",
-            delete: "isAuthenticated && (isRecipeHomeOwner || isRecipeHomeAdmin)",
+            update: "isAuthenticated && (isRecipeHomeOwner || isRecipeHomeAdmin || isRecipeHomeMember)",
+            delete: "isAuthenticated && (isRecipeHomeOwner || isRecipeHomeAdmin || isRecipeHomeMember)",
         },
         bind: dataBind,
     },

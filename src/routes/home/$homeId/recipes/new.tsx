@@ -129,15 +129,16 @@ function NewRecipePage() {
                         throw new Error("File upload did not return an ID");
                     }
 
-                    // Step 3: Set owner and home fields on the file
+                    // Step 3: Set owner and home links on the file using chained links
                     const fileNow = new Date();
                     db.transact(
-                        db.tx.$files[fileId].update({
-                            owner: user.id,
-                            home: homeId,
-                            created: fileNow,
-                            updated: fileNow,
-                        })
+                        db.tx.$files[fileId]
+                            .update({
+                                created: fileNow,
+                                updated: fileNow,
+                            })
+                            .link({ owner: user.id })
+                            .link({ home: homeId })
                     );
 
                     // Step 4: Wait a moment for the file to be available in the database

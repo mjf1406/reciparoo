@@ -9,8 +9,6 @@ const _schema = i.schema({
         $files: i.entity({
             path: i.string().unique().indexed(),
             url: i.string(),
-            owner: i.string().optional(),
-            home: i.string().optional(),
             created: i.date().indexed().optional(),
             updated: i.date().indexed().optional(),
         }),
@@ -63,19 +61,19 @@ const _schema = i.schema({
         // ------------------------
         //        User Links
         // ------------------------
-        // userFiles: {
-        //     forward: {
-        //         on: "$files",
-        //         has: "one",
-        //         label: "owner",
-        //         onDelete: "cascade",
-        //     }, // Each file has one owner, which is a user id
-        //     reverse: {
-        //         on: "$users",
-        //         has: "many",
-        //         label: "files",
-        //     }, // Each user can have many files
-        // },
+        userFiles: {
+            forward: {
+                on: "$files",
+                has: "one",
+                label: "owner",
+                onDelete: "cascade",
+            }, // Each file has one owner, which is a user id
+            reverse: {
+                on: "$users",
+                has: "many",
+                label: "files",
+            }, // Each user can have many files
+        },
         userHomes: {
             forward: {
                 on: "homes",
@@ -196,6 +194,22 @@ const _schema = i.schema({
                 on: "homes", // Each home
                 has: "many", // has many
                 label: "recipes", // recipes
+            },
+        },
+        // ------------------------
+        //      File Links
+        // ------------------------
+        homeFiles: {
+            forward: {
+                on: "$files", // Each file
+                has: "one", // has one
+                label: "home", // home
+                onDelete: "cascade",
+            },
+            reverse: {
+                on: "homes", // Each home
+                has: "many", // has many
+                label: "files", // files
             },
         },
     },

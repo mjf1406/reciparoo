@@ -37,7 +37,7 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
 
     // Parse diet types from comma-separated string
     const dietTypes = recipe.diet
-        ? recipe.diet.split(",").map((d) => d.trim())
+        ? recipe.diet.split(",").map((d: string) => d.trim())
         : [];
 
     // Format time display
@@ -81,7 +81,7 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
                 {/* Diet Badges */}
                 {dietTypes.length > 0 && (
                     <div className="flex flex-wrap gap-2">
-                        {dietTypes.map((diet, index) => (
+                        {dietTypes.map((diet: string, index: number) => (
                             <Badge
                                 key={index}
                                 variant="secondary"

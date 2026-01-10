@@ -3,7 +3,7 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { Plus, X, Trash2, Upload } from "lucide-react";
+import { Plus, X, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,7 +11,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { ImageSkeleton } from "@/components/ui/image-skeleton";
 import {
     Combobox,
-    ComboboxInput,
     ComboboxContent,
     ComboboxList,
     ComboboxItem,
@@ -83,7 +82,7 @@ export function RecipeForm({
     initialData,
 }: RecipeFormProps) {
     const [name, setName] = useState(initialData?.name || "");
-    const [imageURL, setImageURL] = useState(initialData?.imageURL || "");
+    const [imageURL] = useState(initialData?.imageURL || "");
     const [description, setDescription] = useState(initialData?.description || "");
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(
@@ -328,9 +327,9 @@ export function RecipeForm({
                         onValueChange={(values) => setSelectedDiets(values)}
                         multiple
                     >
-                        <ComboboxChips anchor={dietAnchor}>
+                        <ComboboxChips>
                             {selectedDiets.map((diet) => (
-                                <ComboboxChip key={diet} value={diet}>
+                                <ComboboxChip key={diet}>
                                     {diet}
                                 </ComboboxChip>
                             ))}

@@ -11,6 +11,8 @@
 
 ### 2026/01/10
 
+- UX: added public recipe page
+- UI: made light mode card bg darker
 - UI: instructions now supports multiple sections with titles and their own numbered steps
 - UI: added yield, serving size, and serving unit to recipe detail page
 - UX: users can view recipes

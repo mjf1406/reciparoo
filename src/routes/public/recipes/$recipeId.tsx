@@ -1,9 +1,8 @@
 /** @format */
 
 import React from "react";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import useHomeById from "@/hooks/use-home-by-id";
-import useRecipe from "@/hooks/use-recipe";
+import { createFileRoute } from "@tanstack/react-router";
+import usePublicRecipe from "@/hooks/use-public-recipe";
 import {
     Loader2,
     BookOpen,
@@ -19,8 +18,6 @@ import {
     Share2,
 } from "lucide-react";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
-import { useAuthContext } from "@/components/auth/auth-provider";
-import { getUserRoleInHome } from "@/lib/utils";
 import { ImageSkeleton } from "@/components/ui/image-skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -30,7 +27,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useRecipeTracking } from "@/hooks/use-recipe-tracking";
 import { useRecipeScale } from "@/hooks/use-recipe-scale";
-import { RecipeNotes } from "@/components/recipes/recipe-notes";
 import {
     Collapsible,
     CollapsibleContent,
@@ -41,9 +37,10 @@ import {
     copyRecipeLink,
     shareRecipe,
 } from "@/lib/utils/recipe-sharing";
+import { PublicNavbar } from "@/components/layout/public-navbar";
 
-export const Route = createFileRoute("/home/$homeId/recipes/$recipeId/")({
-    component: RecipeDetailPage,
+export const Route = createFileRoute("/public/recipes/$recipeId")({
+    component: PublicRecipeDetailPage,
 });
 
 interface Ingredient {
@@ -75,25 +72,15 @@ function isOldFormat(data: any): data is ProcedureStep[] {
     );
 }
 
-function RecipeDetailPage() {
-    const { homeId, recipeId } = Route.useParams();
-    const {
-        home,
-        isLoading: homeLoading,
-        error: homeError,
-    } = useHomeById(homeId!);
+function PublicRecipeDetailPage() {
+    const { recipeId } = Route.useParams();
     const {
         recipe,
         isLoading: recipeLoading,
         error: recipeError,
-    } = useRecipe(recipeId);
-    const { user } = useAuthContext();
-    const navigate = useNavigate();
+    } = usePublicRecipe(recipeId);
     const [isNutritionLabelOpen, setIsNutritionLabelOpen] = React.useState(false);
     const [linkCopied, setLinkCopied] = React.useState(false);
-
-    const isLoading = homeLoading || recipeLoading;
-    const error = homeError || recipeError;
 
     // Parse recipe data
     const ingredients: Ingredient[] = recipe?.ingredients
@@ -102,12 +89,12 @@ function RecipeDetailPage() {
     const equipment: string[] = recipe?.equipment
         ? (JSON.parse(recipe.equipment) as string[])
         : [];
-    
+
     // Parse procedure - handle both old and new formats
     let procedureSteps: ProcedureStep[] = [];
     let instructionSections: InstructionSection[] = [];
     let isOldProcedureFormat = true;
-    
+
     if (recipe?.procedure) {
         try {
             const parsed = JSON.parse(recipe.procedure);
@@ -283,7 +270,34 @@ function RecipeDetailPage() {
         return formatNumberAsFraction(scaled);
     };
 
-    if (isLoading) {
+    // Share handlers
+    const handleCopyLink = async () => {
+        const url = generatePublicRecipeLink(recipeId);
+        try {
+            await copyRecipeLink(url);
+            setLinkCopied(true);
+            setTimeout(() => setLinkCopied(false), 2000);
+        } catch (error) {
+            console.error("Failed to copy link:", error);
+        }
+    };
+
+    const handleShare = async () => {
+        if (!recipe) return;
+        const url = generatePublicRecipeLink(recipeId);
+        try {
+            await shareRecipe(recipe.name || "Recipe", url);
+            // If share falls back to copy, show the copied state
+            if (!navigator.share) {
+                setLinkCopied(true);
+                setTimeout(() => setLinkCopied(false), 2000);
+            }
+        } catch (error) {
+            console.error("Failed to share:", error);
+        }
+    };
+
+    if (recipeLoading) {
         return (
             <div className="flex items-center justify-center h-screen">
                 <Loader2 className="w-4 h-4 ml-2 animate-spin" /> Loading...
@@ -291,29 +305,8 @@ function RecipeDetailPage() {
         );
     }
 
-    if (error) {
-        return <div>Error: {error.message}</div>;
-    }
-
-    if (!home) {
-        return (
-            <div className="flex items-center justify-center h-screen w-full">
-                <div className="text-center text-destructive">
-                    <p>
-                        Home with ID{" "}
-                        <span className="inline font-bold italic text-foreground">
-                            {homeId}
-                        </span>{" "}
-                        not found.
-                    </p>
-                    <br />
-                    <p>
-                        It either does not exist or you are not authorized to
-                        access it.
-                    </p>
-                </div>
-            </div>
-        );
+    if (recipeError) {
+        return <div>Error: {recipeError.message}</div>;
     }
 
     if (!recipe) {
@@ -328,60 +321,23 @@ function RecipeDetailPage() {
                         not found.
                     </p>
                     <br />
-                    <p>
-                        It either does not exist or you are not authorized to
-                        access it.
-                    </p>
+                    <p>It either does not exist or is not available.</p>
                 </div>
             </div>
         );
     }
 
-    const homeName = (home as { name: string } | null)?.name || "Home";
-    const userRole = getUserRoleInHome(home, user?.id);
-    const canEditRecipe = userRole && userRole !== "viewer";
-
-    // Share handlers
-    const handleCopyLink = async () => {
-        // Use public link for sharing
-        const url = generatePublicRecipeLink(recipeId);
-        try {
-            await copyRecipeLink(url);
-            setLinkCopied(true);
-            setTimeout(() => setLinkCopied(false), 2000);
-        } catch (error) {
-            console.error("Failed to copy link:", error);
-        }
-    };
-
-    const handleShare = async () => {
-        if (!recipe) return;
-        // Use public link for sharing
-        const url = generatePublicRecipeLink(recipeId);
-        try {
-            await shareRecipe(recipe.name || "Recipe", url);
-            // If share falls back to copy, show the copied state
-            if (!navigator.share) {
-                setLinkCopied(true);
-                setTimeout(() => setLinkCopied(false), 2000);
-            }
-        } catch (error) {
-            console.error("Failed to share:", error);
-        }
-    };
-
     return (
-        <main className="container mx-auto px-4 py-8">
-            <Breadcrumb
-                items={[
-                    { label: "Home", to: "/" },
-                    { label: homeName, to: `/home/${homeId}` },
-                    { label: "Recipes", to: `/home/${homeId}/recipes` },
-                    { label: recipe.name || "Recipe" },
-                ]}
-                className="mb-6"
-                role={userRole}
-            />
+        <>
+            <PublicNavbar />
+            <main className="container mx-auto px-4 py-8">
+                <Breadcrumb
+                    items={[
+                        { label: "Home", to: "/" },
+                        { label: recipe.name || "Recipe" },
+                    ]}
+                    className="mb-6"
+                />
 
             <div className="max-w-4xl mx-auto space-y-6">
                 {/* Header Section */}
@@ -394,19 +350,6 @@ function RecipeDetailPage() {
                             </h1>
                         </div>
                         <div className="flex items-center gap-2">
-                            {canEditRecipe && (
-                                <Button
-                                    variant="outline"
-                                    onClick={() => {
-                                        navigate({
-                                            to: "/home/$homeId/recipes/$recipeId/edit",
-                                            params: { homeId, recipeId },
-                                        });
-                                    }}
-                                >
-                                    Edit Recipe
-                                </Button>
-                            )}
                             <Button
                                 variant="outline"
                                 size="icon"
@@ -852,7 +795,8 @@ function RecipeDetailPage() {
                 )}
 
                 {/* Procedure Section */}
-                {(procedureSteps.length > 0 || instructionSections.length > 0) && (
+                {(procedureSteps.length > 0 ||
+                    instructionSections.length > 0) && (
                     <Card>
                         <CardHeader>
                             <div className="flex items-center justify-between">
@@ -915,72 +859,99 @@ function RecipeDetailPage() {
                             ) : (
                                 // New format: sections with steps
                                 <div className="space-y-6">
-                                    {instructionSections.map((section, sectionIndex) => {
-                                        // Calculate global step index for tracking
-                                        let globalStepIndex = 0;
-                                        for (let i = 0; i < sectionIndex; i++) {
-                                            globalStepIndex += instructionSections[i].steps.length;
-                                        }
-                                        
-                                        return (
-                                            <div key={sectionIndex} className="space-y-3">
-                                                {section.title && (
-                                                    <h3 className="text-lg font-semibold text-foreground border-b pb-2">
-                                                        {section.title}
-                                                    </h3>
-                                                )}
-                                                <div className="space-y-4 pl-4">
-                                                    {section.steps.map((step, stepIndex) => {
-                                                        const currentGlobalIndex = globalStepIndex + stepIndex;
-                                                        const checkboxId = `procedure-${recipeId}-${sectionIndex}-${stepIndex}`;
-                                                        return (
-                                                            <div
-                                                                key={stepIndex}
-                                                                className="flex items-start gap-3"
-                                                            >
-                                                                <Checkbox
-                                                                    id={checkboxId}
-                                                                    checked={isChecked(
-                                                                        "procedures",
-                                                                        currentGlobalIndex
-                                                                    )}
-                                                                    onCheckedChange={() =>
-                                                                        toggleItem(
-                                                                            "procedures",
-                                                                            currentGlobalIndex
-                                                                        )
-                                                                    }
-                                                                    className="mt-1"
-                                                                />
-                                                                <label
-                                                                    htmlFor={checkboxId}
-                                                                    className="flex-1 cursor-pointer"
-                                                                >
-                                                                    <div className="flex items-start gap-2">
-                                                                        <span className="font-semibold text-primary shrink-0">
-                                                                            {step.step}.
-                                                                        </span>
-                                                                        <p className="text-sm leading-relaxed">
-                                                                            {step.instruction}
-                                                                        </p>
+                                    {instructionSections.map(
+                                        (section, sectionIndex) => {
+                                            // Calculate global step index for tracking
+                                            let globalStepIndex = 0;
+                                            for (
+                                                let i = 0;
+                                                i < sectionIndex;
+                                                i++
+                                            ) {
+                                                globalStepIndex +=
+                                                    instructionSections[i].steps
+                                                        .length;
+                                            }
+
+                                            return (
+                                                <div
+                                                    key={sectionIndex}
+                                                    className="space-y-3"
+                                                >
+                                                    {section.title && (
+                                                        <h3 className="text-lg font-semibold text-foreground border-b pb-2">
+                                                            {section.title}
+                                                        </h3>
+                                                    )}
+                                                    <div className="space-y-4 pl-4">
+                                                        {section.steps.map(
+                                                            (
+                                                                step,
+                                                                stepIndex
+                                                            ) => {
+                                                                const currentGlobalIndex =
+                                                                    globalStepIndex +
+                                                                    stepIndex;
+                                                                const checkboxId = `procedure-${recipeId}-${sectionIndex}-${stepIndex}`;
+                                                                return (
+                                                                    <div
+                                                                        key={
+                                                                            stepIndex
+                                                                        }
+                                                                        className="flex items-start gap-3"
+                                                                    >
+                                                                        <Checkbox
+                                                                            id={
+                                                                                checkboxId
+                                                                            }
+                                                                            checked={isChecked(
+                                                                                "procedures",
+                                                                                currentGlobalIndex
+                                                                            )}
+                                                                            onCheckedChange={() =>
+                                                                                toggleItem(
+                                                                                    "procedures",
+                                                                                    currentGlobalIndex
+                                                                                )
+                                                                            }
+                                                                            className="mt-1"
+                                                                        />
+                                                                        <label
+                                                                            htmlFor={
+                                                                                checkboxId
+                                                                            }
+                                                                            className="flex-1 cursor-pointer"
+                                                                        >
+                                                                            <div className="flex items-start gap-2">
+                                                                                <span className="font-semibold text-primary shrink-0">
+                                                                                    {
+                                                                                        step.step
+                                                                                    }
+                                                                                    .
+                                                                                </span>
+                                                                                <p className="text-sm leading-relaxed">
+                                                                                    {
+                                                                                        step.instruction
+                                                                                    }
+                                                                                </p>
+                                                                            </div>
+                                                                        </label>
                                                                     </div>
-                                                                </label>
-                                                            </div>
-                                                        );
-                                                    })}
+                                                                );
+                                                            }
+                                                        )}
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        );
-                                    })}
+                                            );
+                                        }
+                                    )}
                                 </div>
                             )}
                         </CardContent>
                     </Card>
                 )}
-
-                {/* Notes Section */}
-                <RecipeNotes recipeId={recipeId} />
             </div>
-        </main>
+            </main>
+        </>
     );
 }

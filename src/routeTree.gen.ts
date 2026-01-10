@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as JoinRouteImport } from './routes/join'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as HomeHomeIdRouteImport } from './routes/home/$homeId'
+import { Route as PublicRecipesRecipeIdRouteImport } from './routes/public/recipes/$recipeId'
 import { Route as HomeHomeIdRecipesRouteImport } from './routes/home/$homeId/recipes'
 import { Route as HomeHomeIdPantryRouteImport } from './routes/home/$homeId/pantry'
 import { Route as HomeHomeIdGroceryListRouteImport } from './routes/home/$homeId/grocery-list'
@@ -33,6 +34,11 @@ const IndexRoute = IndexRouteImport.update({
 const HomeHomeIdRoute = HomeHomeIdRouteImport.update({
   id: '/home/$homeId',
   path: '/home/$homeId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PublicRecipesRecipeIdRoute = PublicRecipesRecipeIdRouteImport.update({
+  id: '/public/recipes/$recipeId',
+  path: '/public/recipes/$recipeId',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HomeHomeIdRecipesRoute = HomeHomeIdRecipesRouteImport.update({
@@ -81,6 +87,7 @@ export interface FileRoutesByFullPath {
   '/home/$homeId/grocery-list': typeof HomeHomeIdGroceryListRoute
   '/home/$homeId/pantry': typeof HomeHomeIdPantryRoute
   '/home/$homeId/recipes': typeof HomeHomeIdRecipesRouteWithChildren
+  '/public/recipes/$recipeId': typeof PublicRecipesRecipeIdRoute
   '/home/$homeId/recipes/new': typeof HomeHomeIdRecipesNewRoute
   '/home/$homeId/recipes/$recipeId/edit': typeof HomeHomeIdRecipesRecipeIdEditRoute
   '/home/$homeId/recipes/$recipeId': typeof HomeHomeIdRecipesRecipeIdIndexRoute
@@ -93,6 +100,7 @@ export interface FileRoutesByTo {
   '/home/$homeId/grocery-list': typeof HomeHomeIdGroceryListRoute
   '/home/$homeId/pantry': typeof HomeHomeIdPantryRoute
   '/home/$homeId/recipes': typeof HomeHomeIdRecipesRouteWithChildren
+  '/public/recipes/$recipeId': typeof PublicRecipesRecipeIdRoute
   '/home/$homeId/recipes/new': typeof HomeHomeIdRecipesNewRoute
   '/home/$homeId/recipes/$recipeId/edit': typeof HomeHomeIdRecipesRecipeIdEditRoute
   '/home/$homeId/recipes/$recipeId': typeof HomeHomeIdRecipesRecipeIdIndexRoute
@@ -106,6 +114,7 @@ export interface FileRoutesById {
   '/home/$homeId/grocery-list': typeof HomeHomeIdGroceryListRoute
   '/home/$homeId/pantry': typeof HomeHomeIdPantryRoute
   '/home/$homeId/recipes': typeof HomeHomeIdRecipesRouteWithChildren
+  '/public/recipes/$recipeId': typeof PublicRecipesRecipeIdRoute
   '/home/$homeId/recipes/new': typeof HomeHomeIdRecipesNewRoute
   '/home/$homeId/recipes/$recipeId/edit': typeof HomeHomeIdRecipesRecipeIdEditRoute
   '/home/$homeId/recipes/$recipeId/': typeof HomeHomeIdRecipesRecipeIdIndexRoute
@@ -120,6 +129,7 @@ export interface FileRouteTypes {
     | '/home/$homeId/grocery-list'
     | '/home/$homeId/pantry'
     | '/home/$homeId/recipes'
+    | '/public/recipes/$recipeId'
     | '/home/$homeId/recipes/new'
     | '/home/$homeId/recipes/$recipeId/edit'
     | '/home/$homeId/recipes/$recipeId'
@@ -132,6 +142,7 @@ export interface FileRouteTypes {
     | '/home/$homeId/grocery-list'
     | '/home/$homeId/pantry'
     | '/home/$homeId/recipes'
+    | '/public/recipes/$recipeId'
     | '/home/$homeId/recipes/new'
     | '/home/$homeId/recipes/$recipeId/edit'
     | '/home/$homeId/recipes/$recipeId'
@@ -144,6 +155,7 @@ export interface FileRouteTypes {
     | '/home/$homeId/grocery-list'
     | '/home/$homeId/pantry'
     | '/home/$homeId/recipes'
+    | '/public/recipes/$recipeId'
     | '/home/$homeId/recipes/new'
     | '/home/$homeId/recipes/$recipeId/edit'
     | '/home/$homeId/recipes/$recipeId/'
@@ -153,6 +165,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   JoinRoute: typeof JoinRoute
   HomeHomeIdRoute: typeof HomeHomeIdRouteWithChildren
+  PublicRecipesRecipeIdRoute: typeof PublicRecipesRecipeIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -176,6 +189,13 @@ declare module '@tanstack/react-router' {
       path: '/home/$homeId'
       fullPath: '/home/$homeId'
       preLoaderRoute: typeof HomeHomeIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/public/recipes/$recipeId': {
+      id: '/public/recipes/$recipeId'
+      path: '/public/recipes/$recipeId'
+      fullPath: '/public/recipes/$recipeId'
+      preLoaderRoute: typeof PublicRecipesRecipeIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/home/$homeId/recipes': {
@@ -267,6 +287,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   JoinRoute: JoinRoute,
   HomeHomeIdRoute: HomeHomeIdRouteWithChildren,
+  PublicRecipesRecipeIdRoute: PublicRecipesRecipeIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

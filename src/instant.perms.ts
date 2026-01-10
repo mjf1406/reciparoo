@@ -20,9 +20,6 @@ const dataBind = [
     // User is still the owner of the data
     "isStillOwner",
     "auth.id in newData.ref('owner.id') || auth.id == newData.id",
-    // User is a premium user
-    "isPremium",
-    "auth.ref('$user.profile.plan').exists(p, p in ['basic', 'plus', 'pro'])",
     // User is a member of the home
     "isHomeMember",
     "auth.id in data.ref('homeMembers.id')",
@@ -35,6 +32,21 @@ const dataBind = [
     // User is still an admin of the data
     "isStillAdmin",
     "auth.id in newData.ref('admins.id')",
+    // User is owner of the home that the join code belongs to
+    "isJoinCodeHomeOwner",
+    "auth.id in data.ref('home.owner.id')",
+    // User is admin of the home that the join code belongs to
+    "isJoinCodeHomeAdmin",
+    "auth.id in data.ref('home.admins.id')",
+    // User is owner of the home that the join code request's join code belongs to
+    "isJoinCodeRequestHomeOwner",
+    "auth.id in data.ref('joinCode.home.owner.id')",
+    // User is admin of the home that the join code request's join code belongs to
+    "isJoinCodeRequestHomeAdmin",
+    "auth.id in data.ref('joinCode.home.admins.id')",
+    // User created the join code request
+    "isJoinCodeRequestCreator",
+    "auth.id in data.ref('user.id')",
 ];
 
 const rules = {
@@ -69,6 +81,24 @@ const rules = {
             view: "isAuthenticated && (isOwner || isAdmin || isHomeMember)",
             update: "isAuthenticated && (isOwner || isAdmin)",
             delete: "isAuthenticated && isOwner",
+        },
+        bind: dataBind,
+    },
+    joinCodes: {
+        allow: {
+            create: "isAuthenticated && (isJoinCodeHomeOwner || isJoinCodeHomeAdmin)",
+            view: "isAuthenticated",
+            update: "isAuthenticated && (isJoinCodeHomeOwner || isJoinCodeHomeAdmin)",
+            delete: "isAuthenticated && (isJoinCodeHomeOwner || isJoinCodeHomeAdmin)",
+        },
+        bind: dataBind,
+    },
+    joinCodeRequests: {
+        allow: {
+            create: "isAuthenticated",
+            view: "isAuthenticated && (isJoinCodeRequestCreator || isJoinCodeRequestHomeOwner || isJoinCodeRequestHomeAdmin)",
+            update: "isAuthenticated && (isJoinCodeRequestHomeOwner || isJoinCodeRequestHomeAdmin)",
+            delete: "isAuthenticated && (isJoinCodeRequestHomeOwner || isJoinCodeRequestHomeAdmin)",
         },
         bind: dataBind,
     },

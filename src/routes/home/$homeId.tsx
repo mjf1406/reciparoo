@@ -6,6 +6,9 @@ import { Navbar } from "@/components/layout/navbar";
 import useHomeById from "@/hooks/use-home-by-id";
 import { HomeIcon, Loader2 } from "lucide-react";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
+import { JoinCodesList } from "@/components/home/join-codes-list";
+import { JoinRequestsList } from "@/components/home/join-requests-list";
+import { useAuthContext } from "@/components/auth/auth-provider";
 
 export const Route = createFileRoute("/home/$homeId")({
     component: HomeDashboard,
@@ -14,7 +17,17 @@ export const Route = createFileRoute("/home/$homeId")({
 function HomeDashboard() {
     const { homeId } = Route.useParams();
     const { home, isLoading, error } = useHomeById(homeId!);
+    const { user } = useAuthContext();
     const location = useLocation();
+
+    // Check if user is owner or admin
+    const isOwnerOrAdmin =
+        home &&
+        user?.id &&
+        ((home as { owner?: { id: string } }).owner?.id === user.id ||
+            (home as { admins?: Array<{ id: string }> }).admins?.some(
+                (admin) => admin.id === user.id
+            ));
 
     if (isLoading) {
         return (
@@ -72,6 +85,12 @@ function HomeDashboard() {
                         {(home as { name: string } | null)?.name}
                     </h1>
                     <FeatureGrid homeId={homeId} />
+                    {isOwnerOrAdmin && (
+                        <div className="mt-8 space-y-6">
+                            <JoinCodesList homeId={homeId} />
+                            <JoinRequestsList homeId={homeId} />
+                        </div>
+                    )}
                 </main>
             ) : (
                 <Outlet />

@@ -27,12 +27,24 @@ const _schema = i.schema({
         homes: i.entity({
             name: i.string().indexed(),
             description: i.string().optional(),
-            icon: i.string().optional(),
-            created: i.date(),
-            updated: i.date(),
+            created: i.date().indexed(),
+            updated: i.date().indexed(),
+        }),
+        joinCodes: i.entity({
+            code: i.string().unique().indexed(),
+            created: i.date().indexed(),
+            updated: i.date().indexed(),
+        }),
+        joinCodeRequests: i.entity({
+            email: i.string().unique().indexed(),
+            created: i.date().indexed(),
+            updated: i.date().indexed(),
         }),
     },
     links: {
+        // ------------------------
+        //        User Links
+        // ------------------------
         userFiles: {
             forward: {
                 on: "$files",
@@ -59,6 +71,9 @@ const _schema = i.schema({
                 label: "homes",
             }, // Each user can have many homes
         },
+        // ------------------------
+        //       Home Links
+        // ------------------------
         homeAdmins: {
             forward: {
                 on: "homes",
@@ -83,9 +98,63 @@ const _schema = i.schema({
                 label: "memberHomes",
             }, // Each user can be a member of many homes
         },
+        // ------------------------
+        //   Home Join Code Links
+        // ------------------------
+        homeJoinCode: {
+            forward: {
+                on: "joinCodes", // Each join code
+                has: "one", // has one
+                label: "home", // home
+                onDelete: "cascade",
+            },
+            reverse: {
+                on: "homes", // Each home
+                has: "many", // has many
+                label: "joinCodes", // join codes
+            },
+        },
+        joinCodeRequests: {
+            forward: {
+                on: "joinCodeRequests", // Each join code request
+                has: "one", // has one
+                label: "joinCode", // join code
+                onDelete: "cascade",
+            },
+            reverse: {
+                on: "joinCodes", // Each join code
+                has: "many", // has many
+                label: "joinCodeRequests", // join code requests
+            },
+        },
+        joinCodeRequestUsers: {
+            forward: {
+                on: "joinCodeRequests", // Each join code request
+                has: "one", // has one
+                label: "user", // user
+                onDelete: "cascade",
+            },
+            reverse: {
+                on: "$users", // Each user
+                has: "one", // has one
+                label: "joinCodeRequest", // join code request
+            },
+        },
+        joinCodeDenied: {
+            forward: {
+                on: "joinCodes", // Each join code
+                has: "many", // has many
+                label: "denied", // denied users
+            },
+            reverse: {
+                on: "$users", // Each user
+                has: "many", // has many
+                label: "deniedJoinCodes", // denied join codes
+            },
+        },
     },
     rooms: {
-        todos: {
+        homes: {
             presence: i.entity({}),
         },
     },

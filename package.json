@@ -10,9 +10,12 @@
         "ps": "npx instant-cli@latest push schema",
         "pp": "npx instant-cli@latest push perms",
         "pps": "npm run ps && npm run pp",
-        "bs": "npm run build && npm run start"
+        "bs": "npm run build && npm run start",
+        "gr": "tsr generate",
+        "watch": "tsr watch"
     },
     "devDependencies": {
+        "@tanstack/router-cli": "^1.146.2",
         "@types/node": "^25.0.3",
         "@types/react": "^18.3.12",
         "@types/react-dom": "^18.3.1",

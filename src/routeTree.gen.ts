@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as JoinRouteImport } from './routes/join'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as HomeHomeIdRouteImport } from './routes/home/$homeId'
 import { Route as HomeHomeIdRecipesRouteImport } from './routes/home/$homeId/recipes'
@@ -16,6 +17,11 @@ import { Route as HomeHomeIdPantryRouteImport } from './routes/home/$homeId/pant
 import { Route as HomeHomeIdGroceryListRouteImport } from './routes/home/$homeId/grocery-list'
 import { Route as HomeHomeIdCalendarRouteImport } from './routes/home/$homeId/calendar'
 
+const JoinRoute = JoinRouteImport.update({
+  id: '/join',
+  path: '/join',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -49,6 +55,7 @@ const HomeHomeIdCalendarRoute = HomeHomeIdCalendarRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/join': typeof JoinRoute
   '/home/$homeId': typeof HomeHomeIdRouteWithChildren
   '/home/$homeId/calendar': typeof HomeHomeIdCalendarRoute
   '/home/$homeId/grocery-list': typeof HomeHomeIdGroceryListRoute
@@ -57,6 +64,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/join': typeof JoinRoute
   '/home/$homeId': typeof HomeHomeIdRouteWithChildren
   '/home/$homeId/calendar': typeof HomeHomeIdCalendarRoute
   '/home/$homeId/grocery-list': typeof HomeHomeIdGroceryListRoute
@@ -66,6 +74,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/join': typeof JoinRoute
   '/home/$homeId': typeof HomeHomeIdRouteWithChildren
   '/home/$homeId/calendar': typeof HomeHomeIdCalendarRoute
   '/home/$homeId/grocery-list': typeof HomeHomeIdGroceryListRoute
@@ -76,6 +85,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/join'
     | '/home/$homeId'
     | '/home/$homeId/calendar'
     | '/home/$homeId/grocery-list'
@@ -84,6 +94,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/join'
     | '/home/$homeId'
     | '/home/$homeId/calendar'
     | '/home/$homeId/grocery-list'
@@ -92,6 +103,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/join'
     | '/home/$homeId'
     | '/home/$homeId/calendar'
     | '/home/$homeId/grocery-list'
@@ -101,11 +113,19 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  JoinRoute: typeof JoinRoute
   HomeHomeIdRoute: typeof HomeHomeIdRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/join': {
+      id: '/join'
+      path: '/join'
+      fullPath: '/join'
+      preLoaderRoute: typeof JoinRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -171,6 +191,7 @@ const HomeHomeIdRouteWithChildren = HomeHomeIdRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  JoinRoute: JoinRoute,
   HomeHomeIdRoute: HomeHomeIdRouteWithChildren,
 }
 export const routeTree = rootRouteImport

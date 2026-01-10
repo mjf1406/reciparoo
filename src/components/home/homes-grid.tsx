@@ -13,7 +13,6 @@ import {
     CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ImageSkeleton } from "@/components/ui/image-skeleton";
 import { CreateHomeDialog } from "./create-home-dialog";
 import { HomeActionMenu } from "./home-action-menu";
 import { useState } from "react";
@@ -78,17 +77,7 @@ export function HomesGrid({ homes }: HomesGridProps) {
                         </div>
                         <CardHeader>
                             <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-lg bg-primary/10">
-                                {home.icon ? (
-                                    <ImageSkeleton
-                                        src={home.icon}
-                                        alt={home.name}
-                                        height={48}
-                                        width={48}
-                                        className="object-contain"
-                                    />
-                                ) : (
-                                    <HomeIcon className="h-8 w-8 text-primary" />
-                                )}
+                                <HomeIcon className="h-8 w-8 text-primary" />
                             </div>
                             <CardTitle className="text-xl">
                                 {home.name}

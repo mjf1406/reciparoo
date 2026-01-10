@@ -126,7 +126,7 @@ function NavUserSignedIn({ user: userProp }: { user?: User }) {
                             />
                             <AvatarFallback>{initials}</AvatarFallback>
                         </Avatar>
-                        <span className="hidden max-w-32 truncate text-sm font-medium sm:block">
+                        <span className="hidden max-w-32 truncate text-sm font-medium lg:block">
                             {displayName}
                         </span>
                         <ChevronsUpDown className="hidden h-4 w-4 text-muted-foreground sm:block" />

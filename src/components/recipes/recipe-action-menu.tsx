@@ -27,7 +27,18 @@ import type { InstaQLEntity } from "@instantdb/react";
 import type { AppSchema } from "@/instant.schema";
 import { getUserRoleInHome } from "@/lib/utils";
 
-type RecipeWithHome = InstaQLEntity<AppSchema, "recipes", { home: {} }>;
+type RecipeWithHome = InstaQLEntity<
+    AppSchema,
+    "recipes",
+    {
+        home: {
+            owner: {};
+            admins: {};
+            homeMembers: {};
+            viewers: {};
+        };
+    }
+>;
 
 interface RecipeActionMenuProps {
     recipe: RecipeWithHome;
@@ -43,7 +54,7 @@ export function RecipeActionMenu({ recipe, userId }: RecipeActionMenuProps) {
     const home = recipe.home;
 
     // Check permissions - only show menu for owner/admin/member
-    const userRole = getUserRoleInHome(home, userId);
+    const userRole = getUserRoleInHome(home ?? null, userId);
     const canEditRecipe = userRole && userRole !== "viewer";
 
     // Don't render menu if user doesn't have permission

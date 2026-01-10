@@ -11,6 +11,8 @@
 
 ### 2026/01/10
 
+- DX: created useHomeRecipes hook
+- DX: created useRecipe hook
 - UX: user can now create recipes
 - UX: user can now edit and delete recipes
 - UI: added manage member cards

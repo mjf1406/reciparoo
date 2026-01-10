@@ -2,12 +2,12 @@
 
 import { createFileRoute, Outlet, useLocation } from "@tanstack/react-router";
 import useHomeById from "@/hooks/use-home-by-id";
+import useHomeRecipes from "@/hooks/use-home-recipes";
 import { Loader2, Plus, BookOpen } from "lucide-react";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { useAuthContext } from "@/components/auth/auth-provider";
 import { getUserRoleInHome } from "@/lib/utils";
-import { db } from "@/lib/db/db";
 import { RecipeCard } from "@/components/recipes/recipe-card";
 
 export const Route = createFileRoute("/home/$homeId/recipes")({
@@ -17,29 +17,10 @@ export const Route = createFileRoute("/home/$homeId/recipes")({
 function RecipesPage() {
     const { homeId } = Route.useParams();
     const { home, isLoading: homeLoading, error: homeError } = useHomeById(homeId!);
+    const { recipes, isLoading: recipesLoading, error: recipesError } = useHomeRecipes(homeId!);
     const { user } = useAuthContext();
     const location = useLocation();
 
-    // Query recipes for this home
-    const { data, isLoading: recipesLoading, error: recipesError } = db.useQuery(
-        user?.id
-            ? {
-                  recipes: {
-                      $: {
-                          where: { "home.id": homeId },
-                      },
-                      home: {
-                          owner: {},
-                          admins: {},
-                          homeMembers: {},
-                          viewers: {},
-                      },
-                  },
-              }
-            : null
-    );
-
-    const recipes = data?.recipes || [];
     const isLoading = homeLoading || recipesLoading;
     const error = homeError || recipesError;
 

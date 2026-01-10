@@ -18,7 +18,18 @@ import { useAuthContext } from "@/components/auth/auth-provider";
 import type { InstaQLEntity } from "@instantdb/react";
 import type { AppSchema } from "@/instant.schema";
 
-type RecipeWithRelations = InstaQLEntity<AppSchema, "recipes", { home: {} }>;
+type RecipeWithRelations = InstaQLEntity<
+    AppSchema,
+    "recipes",
+    {
+        home: {
+            owner: {};
+            admins: {};
+            homeMembers: {};
+            viewers: {};
+        };
+    }
+>;
 
 interface RecipeCardProps {
     recipe: RecipeWithRelations | any; // Allow flexible type for Date objects
@@ -63,7 +74,10 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
                 className="absolute top-4 right-4 z-10"
                 onClick={(e) => e.stopPropagation()}
             >
-                <RecipeActionMenu recipe={recipe} userId={user?.id} />
+                <RecipeActionMenu
+                    recipe={recipe}
+                    userId={user?.id}
+                />
             </div>
 
             {/* Recipe Image */}

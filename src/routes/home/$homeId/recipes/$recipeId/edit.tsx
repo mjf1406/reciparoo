@@ -3,6 +3,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import useHomeById from "@/hooks/use-home-by-id";
+import useRecipe from "@/hooks/use-recipe";
 import { Loader2, BookOpen } from "lucide-react";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
 import { useAuthContext } from "@/components/auth/auth-provider";
@@ -17,23 +18,11 @@ export const Route = createFileRoute("/home/$homeId/recipes/$recipeId/edit")({
 function EditRecipePage() {
     const { homeId, recipeId } = Route.useParams();
     const { home, isLoading: homeLoading, error: homeError } = useHomeById(homeId!);
+    const { recipe, isLoading: recipeLoading, error: recipeError } = useRecipe(recipeId);
     const { user } = useAuthContext();
     const navigate = useNavigate();
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    // Query recipe for this home
-    const { data, isLoading: recipeLoading, error: recipeError } = db.useQuery(
-        user?.id && recipeId
-            ? {
-                  recipes: {
-                      $: { where: { id: recipeId } },
-                      home: {},
-                  },
-              }
-            : null
-    );
-
-    const recipe = data?.recipes?.[0];
     const isLoading = homeLoading || recipeLoading;
     const error = homeError || recipeError;
 

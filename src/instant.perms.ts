@@ -89,6 +89,18 @@ const dataBind = [
     // User is a viewer of the home that the note's recipe belongs to
     "isNoteRecipeHomeViewer",
     "auth.id in data.ref('recipe.home.viewers.id')",
+    // User is owner of the home that the folder belongs to
+    "isFolderHomeOwner",
+    "auth.id in data.ref('home.owner.id')",
+    // User is admin of the home that the folder belongs to
+    "isFolderHomeAdmin",
+    "auth.id in data.ref('home.admins.id')",
+    // User is a member of the home that the folder belongs to
+    "isFolderHomeMember",
+    "auth.id in data.ref('home.homeMembers.id')",
+    // User is a viewer of the home that the folder belongs to
+    "isFolderHomeViewer",
+    "auth.id in data.ref('home.viewers.id')",
 ];
 
 const rules = {
@@ -157,6 +169,15 @@ const rules = {
             view: "isAuthenticated && (isNoteRecipeHomeOwner || isNoteRecipeHomeAdmin || isNoteRecipeHomeMember || isNoteRecipeHomeViewer)",
             update: "isAuthenticated && (isNoteRecipeHomeOwner || isNoteRecipeHomeAdmin || isNoteRecipeHomeMember || isNoteRecipeHomeViewer)",
             delete: "isAuthenticated && (isNoteRecipeHomeOwner || isNoteRecipeHomeAdmin || isNoteRecipeHomeMember || isNoteRecipeHomeViewer)",
+        },
+        bind: dataBind,
+    },
+    folders: {
+        allow: {
+            create: "isAuthenticated && (isFolderHomeOwner || isFolderHomeAdmin || isFolderHomeMember || isFolderHomeViewer)",
+            view: "isAuthenticated && (isFolderHomeOwner || isFolderHomeAdmin || isFolderHomeMember || isFolderHomeViewer)",
+            update: "isAuthenticated && (isFolderHomeOwner || isFolderHomeAdmin || isFolderHomeMember)",
+            delete: "isAuthenticated && (isFolderHomeOwner || isFolderHomeAdmin || isFolderHomeMember)",
         },
         bind: dataBind,
     },

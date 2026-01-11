@@ -402,6 +402,7 @@ function RecipeDetailPage() {
                                         navigate({
                                             to: "/home/$homeId/recipes/$recipeId/edit",
                                             params: { homeId, recipeId },
+                                            search: {},
                                         });
                                     }}
                                 >

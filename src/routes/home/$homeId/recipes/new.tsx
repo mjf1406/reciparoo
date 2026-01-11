@@ -311,6 +311,7 @@ function NewRecipePage() {
             navigate({
                 to: "/home/$homeId/recipes",
                 params: { homeId },
+                search: {},
             });
         } catch (error) {
             console.error("Error creating recipe:", error);
@@ -324,6 +325,7 @@ function NewRecipePage() {
         navigate({
             to: "/home/$homeId/recipes",
             params: { homeId },
+            search: {},
         });
     };
 

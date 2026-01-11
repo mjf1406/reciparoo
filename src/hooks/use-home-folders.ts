@@ -5,9 +5,9 @@ import { db } from "@/lib/db/db";
 import type { InstaQLEntity } from "@instantdb/react";
 import type { AppSchema } from "@/instant.schema";
 
-type RecipeWithHome = InstaQLEntity<
+type FolderWithRelations = InstaQLEntity<
     AppSchema,
-    "recipes",
+    "folders",
     {
         home: {
             owner: {};
@@ -15,23 +15,26 @@ type RecipeWithHome = InstaQLEntity<
             homeMembers: {};
             viewers: {};
         };
-        folder: {};
+        parentFolder: {};
+        subfolders: {};
+        recipes: {};
     }
 >;
 
-export default function useHomeRecipes(homeId: string, folderId?: string | null) {
+export default function useHomeFolders(homeId: string, parentFolderId?: string | null) {
     const { user, isLoading: authLoading } = useAuthContext();
 
     // Only query when user is available
+    // Note: recipes: {} fetches all recipe fields including imageURL
     const query = user?.id
         ? {
-              recipes: {
+              folders: {
                   $: {
                       where: {
                           "home.id": homeId,
-                          ...(folderId === null || folderId === undefined
-                              ? { "folder.id": { $isNull: true } }
-                              : { "folder.id": folderId }),
+                          ...(parentFolderId === null || parentFolderId === undefined
+                              ? { "parentFolder.id": { $isNull: true } }
+                              : { "parentFolder.id": parentFolderId }),
                       },
                   },
                   home: {
@@ -40,21 +43,23 @@ export default function useHomeRecipes(homeId: string, folderId?: string | null)
                       homeMembers: {},
                       viewers: {},
                   },
-                  folder: {},
+                  parentFolder: {},
+                  subfolders: {},
+                  recipes: {}, // Includes all recipe fields (id, name, imageURL, etc.)
               },
           }
         : null;
 
     const { data, isLoading: queryLoading, error } = db.useQuery(query);
 
-    const recipes =
+    const folders =
         query && data
-            ? ((data as { recipes?: unknown[] }).recipes || []) as RecipeWithHome[]
+            ? ((data as { folders?: unknown[] }).folders || []) as FolderWithRelations[]
             : [];
     const isLoading = authLoading || queryLoading;
 
     return {
-        recipes,
+        folders,
         isLoading,
         error,
     };

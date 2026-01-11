@@ -336,6 +336,7 @@ function EditRecipePage() {
             navigate({
                 to: "/home/$homeId/recipes",
                 params: { homeId },
+                search: {},
             });
         } catch (error) {
             console.error("Error updating recipe:", error);
@@ -349,6 +350,7 @@ function EditRecipePage() {
         navigate({
             to: "/home/$homeId/recipes",
             params: { homeId },
+            search: {},
         });
     };
 

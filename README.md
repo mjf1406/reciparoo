@@ -11,6 +11,8 @@
 
 ### 2026/01/11
 
+- UX: added folders and sub-folders
+- UX: added video URL to recipes
 - UX: public recipe pages now use recipe title and description as page metadata
 
 ### 2026/01/10

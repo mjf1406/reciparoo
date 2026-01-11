@@ -66,6 +66,12 @@ const _schema = i.schema({
             created: i.date().indexed(),
             updated: i.date().indexed(),
         }),
+        folders: i.entity({
+            name: i.string().indexed(),
+            description: i.string().optional(),
+            created: i.date().indexed(),
+            updated: i.date().indexed(),
+        }),
     },
     links: {
         // ------------------------
@@ -217,6 +223,48 @@ const _schema = i.schema({
                 on: "recipes", // Each recipe
                 has: "many", // has many
                 label: "notes", // notes
+            },
+        },
+        recipeFolder: {
+            forward: {
+                on: "recipes", // Each recipe
+                has: "one", // has one
+                label: "folder", // folder
+                onDelete: "cascade",
+            },
+            reverse: {
+                on: "folders", // Each folder
+                has: "many", // has many
+                label: "recipes", // recipes
+            },
+        },
+        // ------------------------
+        //      Folder Links
+        // ------------------------
+        homeFolders: {
+            forward: {
+                on: "folders", // Each folder
+                has: "one", // has one
+                label: "home", // home
+                onDelete: "cascade",
+            },
+            reverse: {
+                on: "homes", // Each home
+                has: "many", // has many
+                label: "folders", // folders
+            },
+        },
+        folderParent: {
+            forward: {
+                on: "folders", // Each folder
+                has: "one", // has one
+                label: "parentFolder", // parentFolder
+                onDelete: "cascade",
+            },
+            reverse: {
+                on: "folders", // Each folder
+                has: "many", // has many
+                label: "subfolders", // subfolders
             },
         },
         // ------------------------

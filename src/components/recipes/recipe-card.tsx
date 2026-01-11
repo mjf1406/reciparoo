@@ -75,6 +75,7 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
             navigate({
                 to: "/home/$homeId/recipes/$recipeId",
                 params: { homeId: home.id, recipeId: recipe.id },
+                search: {},
             });
         }
     };

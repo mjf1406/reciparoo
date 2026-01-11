@@ -9,6 +9,10 @@
 
 ## Change Log
 
+### 2026/01/11
+
+- UX: public recipe pages now use recipe title and description as page metadata
+
 ### 2026/01/10
 
 - UX: added public recipe page

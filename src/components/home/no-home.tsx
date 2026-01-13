@@ -26,7 +26,7 @@ export function NoHome() {
                 <CardHeader className="text-center">
                     <div className="mx-auto mb-4 flex items-center justify-center">
                         <img
-                            src="/logo.webp"
+                            src="/brand/logo.webp"
                             alt="Reciparoo"
                             className="h-20 w-auto"
                         />

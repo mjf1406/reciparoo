@@ -48,12 +48,17 @@ export function Navbar({ homeId }: NavbarProps) {
                 <Link
                     to={"/"}
                     params={homeId ? { homeId } : undefined}
-                    className="flex shrink-0 items-center transition-opacity hover:opacity-80"
+                    className="flex shrink-0 items-center gap-2 transition-opacity hover:opacity-80"
                 >
                     <img
-                        src="/logo-with-text.webp"
+                        src="/brand/logo.webp"
                         alt="Reciparoo"
-                        className="h-16 w-auto"
+                        className="h-14 w-auto"
+                    />
+                    <img
+                        src="/brand/text.webp"
+                        alt=""
+                        className="h-8 w-auto"
                     />
                 </Link>
 

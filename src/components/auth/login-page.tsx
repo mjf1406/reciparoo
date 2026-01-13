@@ -20,9 +20,14 @@ export function LoginPage() {
                         className="flex items-center gap-2 transition-opacity hover:opacity-80"
                     >
                         <img
-                            src="/logo-with-text.webp"
+                            src="/brand/logo.webp"
                             alt="Reciparoo"
                             className="h-12 w-auto"
+                        />
+                        <img
+                            src="/brand/text.webp"
+                            alt=""
+                            className="h-6 w-auto"
                         />
                     </Link>
                     <ThemeSwitch />
@@ -34,9 +39,14 @@ export function LoginPage() {
                 <CardHeader className="space-y-1 text-center">
                     <div className="flex flex-col items-center gap-2">
                         <img
-                            src="/logo-stacked.webp"
+                            src="/brand/logo.webp"
                             alt="Reciparoo"
-                            className="h-32 w-auto"
+                            className="h-24 w-auto"
+                        />
+                        <img
+                            src="/brand/text.webp"
+                            alt=""
+                            className="h-8 w-auto"
                         />
                     </div>
                     <CardDescription className="text-base">

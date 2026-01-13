@@ -17,6 +17,7 @@ import {
     Copy,
     Check,
     Share2,
+    Play,
 } from "lucide-react";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
 import { useAuthContext } from "@/components/auth/auth-provider";
@@ -401,6 +402,7 @@ function RecipeDetailPage() {
                                         navigate({
                                             to: "/home/$homeId/recipes/$recipeId/edit",
                                             params: { homeId, recipeId },
+                                            search: {},
                                         });
                                     }}
                                 >
@@ -504,6 +506,17 @@ function RecipeDetailPage() {
                             >
                                 <ExternalLink className="h-4 w-4" />
                                 <span>View Source</span>
+                            </a>
+                        )}
+                        {recipe.videoURL && (
+                            <a
+                                href={recipe.videoURL}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-1 text-primary hover:underline"
+                            >
+                                <Play className="h-4 w-4" />
+                                <span>Watch Video</span>
                             </a>
                         )}
                     </div>

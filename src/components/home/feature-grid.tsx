@@ -28,10 +28,10 @@ export function FeatureGrid({ homeId }: FeatureGridProps) {
         },
         {
             id: "calendar",
-            title: "Calendar",
-            description: "Plan your meals and schedule recipes for specific days",
+            title: "Meal Plans",
+            description: "Create meal plans and schedule recipes for specific days",
             icon: Calendar,
-            comingSoon: true,
+            comingSoon: false,
             onClick: () => {
                 navigate({ to: `/home/${homeId}/calendar` });
             },

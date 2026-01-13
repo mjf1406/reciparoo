@@ -104,6 +104,7 @@ function NewRecipePage() {
         equipment: string;
         procedure: string;
         source?: string;
+        videoURL?: string;
     }) => {
         setIsSubmitting(true);
         try {
@@ -296,6 +297,7 @@ function NewRecipePage() {
                         equipment: formData.equipment,
                         procedure: formData.procedure,
                         source: formData.source,
+                        videoURL: formData.videoURL,
                         created: now,
                         updated: now,
                     })
@@ -309,6 +311,7 @@ function NewRecipePage() {
             navigate({
                 to: "/home/$homeId/recipes",
                 params: { homeId },
+                search: {},
             });
         } catch (error) {
             console.error("Error creating recipe:", error);
@@ -322,6 +325,7 @@ function NewRecipePage() {
         navigate({
             to: "/home/$homeId/recipes",
             params: { homeId },
+            search: {},
         });
     };
 

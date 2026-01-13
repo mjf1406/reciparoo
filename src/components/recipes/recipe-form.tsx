@@ -81,6 +81,7 @@ interface RecipeFormProps {
         equipment: string;
         procedure: string;
         source?: string;
+        videoURL?: string;
     }) => void;
     onCancel: () => void;
     isLoading?: boolean;
@@ -99,6 +100,7 @@ interface RecipeFormProps {
         equipment?: string;
         procedure?: string;
         source?: string;
+        videoURL?: string;
     };
 }
 
@@ -183,6 +185,7 @@ export function RecipeForm({
         initializeInstructionSections
     );
     const [source, setSource] = useState(initialData?.source || "");
+    const [videoURL, setVideoURL] = useState(initialData?.videoURL || "");
 
     const dietAnchor = useComboboxAnchor();
     const [dietOpen, setDietOpen] = useState(false);
@@ -288,6 +291,7 @@ export function RecipeForm({
                     .filter((section) => section.steps.length > 0)
             ),
             source: source.trim() || undefined,
+            videoURL: videoURL.trim() || undefined,
         });
     };
 
@@ -836,6 +840,22 @@ export function RecipeForm({
                     placeholder="https://example.com/recipe"
                     disabled={isLoading}
                 />
+            </div>
+
+            {/* Video URL */}
+            <div className="space-y-2">
+                <Label htmlFor="videoURL">Video Link</Label>
+                <Input
+                    id="videoURL"
+                    type="url"
+                    value={videoURL}
+                    onChange={(e) => setVideoURL(e.target.value)}
+                    placeholder="https://youtube.com/watch?v=... or https://vimeo.com/..."
+                    disabled={isLoading}
+                />
+                <p className="text-xs text-muted-foreground">
+                    Add a link to a video tutorial or demonstration of this recipe
+                </p>
             </div>
 
             {/* Form Actions */}

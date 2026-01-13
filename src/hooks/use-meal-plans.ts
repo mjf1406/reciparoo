@@ -5,9 +5,9 @@ import { db } from "@/lib/db/db";
 import type { InstaQLEntity } from "@instantdb/react";
 import type { AppSchema } from "@/instant.schema";
 
-type RecipeWithHome = InstaQLEntity<
+export type MealPlanWithRelations = InstaQLEntity<
     AppSchema,
-    "recipes",
+    "mealPlans",
     {
         home: {
             owner: {};
@@ -15,23 +15,24 @@ type RecipeWithHome = InstaQLEntity<
             homeMembers: {};
             viewers: {};
         };
-        folder: {};
+        mealSlots: {
+            mealSlotRecipes: {
+                recipe: {};
+            };
+        };
     }
 >;
 
-export default function useHomeRecipes(homeId: string, folderId?: string | null) {
+export default function useMealPlans(homeId: string) {
     const { user, isLoading: authLoading } = useAuthContext();
 
     // Only query when user is available
     const query = user?.id
         ? {
-              recipes: {
+              mealPlans: {
                   $: {
                       where: {
                           "home.id": homeId,
-                          ...(folderId === null || folderId === undefined
-                              ? { "folder.id": { $isNull: true } }
-                              : { "folder.id": folderId }),
                       },
                   },
                   home: {
@@ -40,21 +41,26 @@ export default function useHomeRecipes(homeId: string, folderId?: string | null)
                       homeMembers: {},
                       viewers: {},
                   },
-                  folder: {},
+                  mealSlots: {
+                      mealSlotRecipes: {
+                          recipe: {},
+                      },
+                  },
               },
           }
         : null;
 
     const { data, isLoading: queryLoading, error } = db.useQuery(query);
 
-    const recipes =
+    const mealPlans =
         query && data
-            ? ((data as { recipes?: unknown[] }).recipes || []) as RecipeWithHome[]
+            ? ((data as { mealPlans?: unknown[] }).mealPlans ||
+                  []) as MealPlanWithRelations[]
             : [];
     const isLoading = authLoading || queryLoading;
 
     return {
-        recipes,
+        mealPlans,
         isLoading,
         error,
     };

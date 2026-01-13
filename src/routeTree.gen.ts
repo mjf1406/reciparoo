@@ -18,6 +18,7 @@ import { Route as HomeHomeIdPantryRouteImport } from './routes/home/$homeId/pant
 import { Route as HomeHomeIdGroceryListRouteImport } from './routes/home/$homeId/grocery-list'
 import { Route as HomeHomeIdCalendarRouteImport } from './routes/home/$homeId/calendar'
 import { Route as HomeHomeIdRecipesNewRouteImport } from './routes/home/$homeId/recipes/new'
+import { Route as HomeHomeIdMealPlansMealPlanIdRouteImport } from './routes/home/$homeId/meal-plans.$mealPlanId'
 import { Route as HomeHomeIdRecipesRecipeIdIndexRouteImport } from './routes/home/$homeId/recipes/$recipeId/index'
 import { Route as HomeHomeIdRecipesRecipeIdEditRouteImport } from './routes/home/$homeId/recipes/$recipeId/edit'
 
@@ -66,6 +67,12 @@ const HomeHomeIdRecipesNewRoute = HomeHomeIdRecipesNewRouteImport.update({
   path: '/new',
   getParentRoute: () => HomeHomeIdRecipesRoute,
 } as any)
+const HomeHomeIdMealPlansMealPlanIdRoute =
+  HomeHomeIdMealPlansMealPlanIdRouteImport.update({
+    id: '/meal-plans/$mealPlanId',
+    path: '/meal-plans/$mealPlanId',
+    getParentRoute: () => HomeHomeIdRoute,
+  } as any)
 const HomeHomeIdRecipesRecipeIdIndexRoute =
   HomeHomeIdRecipesRecipeIdIndexRouteImport.update({
     id: '/$recipeId/',
@@ -88,6 +95,7 @@ export interface FileRoutesByFullPath {
   '/home/$homeId/pantry': typeof HomeHomeIdPantryRoute
   '/home/$homeId/recipes': typeof HomeHomeIdRecipesRouteWithChildren
   '/public/recipes/$recipeId': typeof PublicRecipesRecipeIdRoute
+  '/home/$homeId/meal-plans/$mealPlanId': typeof HomeHomeIdMealPlansMealPlanIdRoute
   '/home/$homeId/recipes/new': typeof HomeHomeIdRecipesNewRoute
   '/home/$homeId/recipes/$recipeId/edit': typeof HomeHomeIdRecipesRecipeIdEditRoute
   '/home/$homeId/recipes/$recipeId': typeof HomeHomeIdRecipesRecipeIdIndexRoute
@@ -101,6 +109,7 @@ export interface FileRoutesByTo {
   '/home/$homeId/pantry': typeof HomeHomeIdPantryRoute
   '/home/$homeId/recipes': typeof HomeHomeIdRecipesRouteWithChildren
   '/public/recipes/$recipeId': typeof PublicRecipesRecipeIdRoute
+  '/home/$homeId/meal-plans/$mealPlanId': typeof HomeHomeIdMealPlansMealPlanIdRoute
   '/home/$homeId/recipes/new': typeof HomeHomeIdRecipesNewRoute
   '/home/$homeId/recipes/$recipeId/edit': typeof HomeHomeIdRecipesRecipeIdEditRoute
   '/home/$homeId/recipes/$recipeId': typeof HomeHomeIdRecipesRecipeIdIndexRoute
@@ -115,6 +124,7 @@ export interface FileRoutesById {
   '/home/$homeId/pantry': typeof HomeHomeIdPantryRoute
   '/home/$homeId/recipes': typeof HomeHomeIdRecipesRouteWithChildren
   '/public/recipes/$recipeId': typeof PublicRecipesRecipeIdRoute
+  '/home/$homeId/meal-plans/$mealPlanId': typeof HomeHomeIdMealPlansMealPlanIdRoute
   '/home/$homeId/recipes/new': typeof HomeHomeIdRecipesNewRoute
   '/home/$homeId/recipes/$recipeId/edit': typeof HomeHomeIdRecipesRecipeIdEditRoute
   '/home/$homeId/recipes/$recipeId/': typeof HomeHomeIdRecipesRecipeIdIndexRoute
@@ -130,6 +140,7 @@ export interface FileRouteTypes {
     | '/home/$homeId/pantry'
     | '/home/$homeId/recipes'
     | '/public/recipes/$recipeId'
+    | '/home/$homeId/meal-plans/$mealPlanId'
     | '/home/$homeId/recipes/new'
     | '/home/$homeId/recipes/$recipeId/edit'
     | '/home/$homeId/recipes/$recipeId'
@@ -143,6 +154,7 @@ export interface FileRouteTypes {
     | '/home/$homeId/pantry'
     | '/home/$homeId/recipes'
     | '/public/recipes/$recipeId'
+    | '/home/$homeId/meal-plans/$mealPlanId'
     | '/home/$homeId/recipes/new'
     | '/home/$homeId/recipes/$recipeId/edit'
     | '/home/$homeId/recipes/$recipeId'
@@ -156,6 +168,7 @@ export interface FileRouteTypes {
     | '/home/$homeId/pantry'
     | '/home/$homeId/recipes'
     | '/public/recipes/$recipeId'
+    | '/home/$homeId/meal-plans/$mealPlanId'
     | '/home/$homeId/recipes/new'
     | '/home/$homeId/recipes/$recipeId/edit'
     | '/home/$homeId/recipes/$recipeId/'
@@ -233,6 +246,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof HomeHomeIdRecipesNewRouteImport
       parentRoute: typeof HomeHomeIdRecipesRoute
     }
+    '/home/$homeId/meal-plans/$mealPlanId': {
+      id: '/home/$homeId/meal-plans/$mealPlanId'
+      path: '/meal-plans/$mealPlanId'
+      fullPath: '/home/$homeId/meal-plans/$mealPlanId'
+      preLoaderRoute: typeof HomeHomeIdMealPlansMealPlanIdRouteImport
+      parentRoute: typeof HomeHomeIdRoute
+    }
     '/home/$homeId/recipes/$recipeId/': {
       id: '/home/$homeId/recipes/$recipeId/'
       path: '/$recipeId'
@@ -270,6 +290,7 @@ interface HomeHomeIdRouteChildren {
   HomeHomeIdGroceryListRoute: typeof HomeHomeIdGroceryListRoute
   HomeHomeIdPantryRoute: typeof HomeHomeIdPantryRoute
   HomeHomeIdRecipesRoute: typeof HomeHomeIdRecipesRouteWithChildren
+  HomeHomeIdMealPlansMealPlanIdRoute: typeof HomeHomeIdMealPlansMealPlanIdRoute
 }
 
 const HomeHomeIdRouteChildren: HomeHomeIdRouteChildren = {
@@ -277,6 +298,7 @@ const HomeHomeIdRouteChildren: HomeHomeIdRouteChildren = {
   HomeHomeIdGroceryListRoute: HomeHomeIdGroceryListRoute,
   HomeHomeIdPantryRoute: HomeHomeIdPantryRoute,
   HomeHomeIdRecipesRoute: HomeHomeIdRecipesRouteWithChildren,
+  HomeHomeIdMealPlansMealPlanIdRoute: HomeHomeIdMealPlansMealPlanIdRoute,
 }
 
 const HomeHomeIdRouteWithChildren = HomeHomeIdRoute._addFileChildren(

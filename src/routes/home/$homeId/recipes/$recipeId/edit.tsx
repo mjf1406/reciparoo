@@ -129,6 +129,7 @@ function EditRecipePage() {
         equipment: string;
         procedure: string;
         source?: string;
+        videoURL?: string;
     }) => {
         setIsSubmitting(true);
         try {
@@ -322,6 +323,7 @@ function EditRecipePage() {
                         equipment: formData.equipment,
                         procedure: formData.procedure,
                         source: formData.source,
+                        videoURL: formData.videoURL,
                         updated: now,
                         // Note: created timestamp is preserved automatically by InstantDB
                     })
@@ -334,6 +336,7 @@ function EditRecipePage() {
             navigate({
                 to: "/home/$homeId/recipes",
                 params: { homeId },
+                search: {},
             });
         } catch (error) {
             console.error("Error updating recipe:", error);
@@ -347,6 +350,7 @@ function EditRecipePage() {
         navigate({
             to: "/home/$homeId/recipes",
             params: { homeId },
+            search: {},
         });
     };
 
@@ -366,6 +370,7 @@ function EditRecipePage() {
         equipment: recipe.equipment,
         procedure: recipe.procedure,
         source: recipe.source,
+        videoURL: recipe.videoURL,
     };
 
     return (

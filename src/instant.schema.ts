@@ -57,6 +57,7 @@ const _schema = i.schema({
             equipment: i.string().optional(),
             procedure: i.string().optional(),
             source: i.string().optional(),
+            videoURL: i.string().optional(),
             created: i.date().indexed(),
             updated: i.date().indexed(),
         }),
@@ -64,6 +65,31 @@ const _schema = i.schema({
             content: i.string(),
             created: i.date().indexed(),
             updated: i.date().indexed(),
+        }),
+        folders: i.entity({
+            name: i.string().indexed(),
+            description: i.string().optional(),
+            created: i.date().indexed(),
+            updated: i.date().indexed(),
+        }),
+        mealPlans: i.entity({
+            name: i.string().indexed(),
+            duration: i.number().indexed(), // 1, 2, or 4 weeks
+            startDayOfWeek: i.number().indexed(), // 0-6, where 0=Sunday
+            created: i.date().indexed(),
+            updated: i.date().indexed(),
+        }),
+        mealSlots: i.entity({
+            name: i.string().indexed(), // e.g., "breakfast", "lunch", "brunch"
+            type: i.string().indexed(), // "meal" or "snack"
+            time: i.string().indexed(), // 24-hour format, e.g., "07:00"
+            dayBitmask: i.number().indexed(), // 7-bit mask, one bit per day
+            created: i.date().indexed(),
+            updated: i.date().indexed(),
+        }),
+        mealSlotRecipes: i.entity({
+            order: i.number().optional(), // for ordering recipes within a slot
+            created: i.date().indexed(),
         }),
     },
     links: {
@@ -218,6 +244,48 @@ const _schema = i.schema({
                 label: "notes", // notes
             },
         },
+        recipeFolder: {
+            forward: {
+                on: "recipes", // Each recipe
+                has: "one", // has one
+                label: "folder", // folder
+                onDelete: "cascade",
+            },
+            reverse: {
+                on: "folders", // Each folder
+                has: "many", // has many
+                label: "recipes", // recipes
+            },
+        },
+        // ------------------------
+        //      Folder Links
+        // ------------------------
+        homeFolders: {
+            forward: {
+                on: "folders", // Each folder
+                has: "one", // has one
+                label: "home", // home
+                onDelete: "cascade",
+            },
+            reverse: {
+                on: "homes", // Each home
+                has: "many", // has many
+                label: "folders", // folders
+            },
+        },
+        folderParent: {
+            forward: {
+                on: "folders", // Each folder
+                has: "one", // has one
+                label: "parentFolder", // parentFolder
+                onDelete: "cascade",
+            },
+            reverse: {
+                on: "folders", // Each folder
+                has: "many", // has many
+                label: "subfolders", // subfolders
+            },
+        },
         // ------------------------
         //      File Links
         // ------------------------
@@ -232,6 +300,61 @@ const _schema = i.schema({
                 on: "homes", // Each home
                 has: "many", // has many
                 label: "files", // files
+            },
+        },
+        // ------------------------
+        //    Meal Plan Links
+        // ------------------------
+        homeMealPlans: {
+            forward: {
+                on: "mealPlans", // Each meal plan
+                has: "one", // has one
+                label: "home", // home
+                onDelete: "cascade",
+            },
+            reverse: {
+                on: "homes", // Each home
+                has: "many", // has many
+                label: "mealPlans", // meal plans
+            },
+        },
+        mealPlanSlots: {
+            forward: {
+                on: "mealSlots", // Each meal slot
+                has: "one", // has one
+                label: "mealPlan", // meal plan
+                onDelete: "cascade",
+            },
+            reverse: {
+                on: "mealPlans", // Each meal plan
+                has: "many", // has many
+                label: "mealSlots", // meal slots
+            },
+        },
+        mealSlotRecipeSlot: {
+            forward: {
+                on: "mealSlotRecipes", // Each meal slot recipe
+                has: "one", // has one
+                label: "mealSlot", // meal slot
+                onDelete: "cascade",
+            },
+            reverse: {
+                on: "mealSlots", // Each meal slot
+                has: "many", // has many
+                label: "mealSlotRecipes", // meal slot recipes
+            },
+        },
+        mealSlotRecipeRecipe: {
+            forward: {
+                on: "mealSlotRecipes", // Each meal slot recipe
+                has: "one", // has one
+                label: "recipe", // recipe
+                onDelete: "cascade",
+            },
+            reverse: {
+                on: "recipes", // Each recipe
+                has: "many", // has many
+                label: "mealSlotRecipes", // meal slot recipes
             },
         },
     },

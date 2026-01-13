@@ -9,6 +9,17 @@
 
 ## Change Log
 
+### 2026/01/13
+
+- BUG: meal slots now correctly display all recipes, even if they don't have an image
+- UX: added meal plan feature (big release)
+
+### 2026/01/11
+
+- UX: added folders and sub-folders
+- UX: added video URL to recipes
+- UX: public recipe pages now use recipe title and description as page metadata
+
 ### 2026/01/10
 
 - UX: added public recipe page

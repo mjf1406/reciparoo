@@ -22,15 +22,15 @@ import {
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { db } from "@/lib/db/db";
-import { useNavigate } from "@tanstack/react-router";
 import type { InstaQLEntity } from "@instantdb/react";
 import type { AppSchema } from "@/instant.schema";
 import { getUserRoleInHome } from "@/lib/utils";
-import { MoveRecipeToFolderDialog } from "./move-recipe-to-folder-dialog";
+import { EditFolderDialog } from "./edit-folder-dialog";
+import { MoveFolderDialog } from "./move-folder-dialog";
 
-type RecipeWithHome = InstaQLEntity<
+type FolderWithRelations = InstaQLEntity<
     AppSchema,
-    "recipes",
+    "folders",
     {
         home: {
             owner: {};
@@ -38,56 +38,48 @@ type RecipeWithHome = InstaQLEntity<
             homeMembers: {};
             viewers: {};
         };
-        folder: {};
+        parentFolder: {};
     }
 >;
 
-interface RecipeActionMenuProps {
-    recipe: RecipeWithHome;
+interface FolderActionMenuProps {
+    folder: FolderWithRelations;
     userId: string | null | undefined;
+    onEdit?: () => void;
 }
 
-export function RecipeActionMenu({ recipe, userId }: RecipeActionMenuProps) {
+export function FolderActionMenu({ folder, userId, onEdit }: FolderActionMenuProps) {
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+    const [editDialogOpen, setEditDialogOpen] = useState(false);
     const [moveDialogOpen, setMoveDialogOpen] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
-    const navigate = useNavigate();
 
-    // Get home from recipe relation
-    const home = recipe.home;
+    // Get home from folder relation
+    const home = folder.home;
 
     // Check permissions - only show menu for owner/admin/member
     const userRole = getUserRoleInHome(home ?? null, userId);
-    const canEditRecipe = userRole && userRole !== "viewer";
+    const canEditFolder = userRole && userRole !== "viewer";
 
     // Don't render menu if user doesn't have permission
-    if (!canEditRecipe) {
+    if (!canEditFolder) {
         return null;
     }
 
-    const handleEdit = () => {
-        if (!home?.id || !recipe?.id) return;
-        navigate({
-            to: "/home/$homeId/recipes/$recipeId/edit",
-            params: { homeId: home.id, recipeId: recipe.id },
-            search: {},
-        });
-    };
-
     const handleDelete = async () => {
-        if (!recipe?.id) return;
+        if (!folder?.id) return;
 
         setIsDeleting(true);
         try {
-            db.transact(db.tx.recipes[recipe.id].delete());
+            db.transact(db.tx.folders[folder.id].delete());
 
             // Wait a moment for the transaction to complete
             await new Promise((resolve) => setTimeout(resolve, 100));
 
             setDeleteDialogOpen(false);
         } catch (error) {
-            console.error("Error deleting recipe:", error);
-            alert("Failed to delete recipe. Please try again.");
+            console.error("Error deleting folder:", error);
+            alert("Failed to delete folder. Please try again.");
         } finally {
             setIsDeleting(false);
         }
@@ -116,7 +108,7 @@ export function RecipeActionMenu({ recipe, userId }: RecipeActionMenuProps) {
                     <DropdownMenuItem
                         onClick={(e) => {
                             e.stopPropagation();
-                            handleEdit();
+                            setEditDialogOpen(true);
                         }}
                     >
                         <Pencil className="mr-2 h-4 w-4" />
@@ -129,7 +121,7 @@ export function RecipeActionMenu({ recipe, userId }: RecipeActionMenuProps) {
                         }}
                     >
                         <FolderUp className="mr-2 h-4 w-4" />
-                        Move to Folder
+                        Move
                     </DropdownMenuItem>
                     <DropdownMenuItem
                         variant="destructive"
@@ -144,6 +136,28 @@ export function RecipeActionMenu({ recipe, userId }: RecipeActionMenuProps) {
                 </DropdownMenuContent>
             </DropdownMenu>
 
+            <EditFolderDialog
+                folder={folder}
+                open={editDialogOpen}
+                onOpenChange={setEditDialogOpen}
+                onSuccess={() => {
+                    setEditDialogOpen(false);
+                    onEdit?.();
+                }}
+            />
+
+            {home?.id && (
+                <MoveFolderDialog
+                    folder={folder}
+                    homeId={home.id}
+                    open={moveDialogOpen}
+                    onOpenChange={setMoveDialogOpen}
+                    onSuccess={() => {
+                        setMoveDialogOpen(false);
+                    }}
+                />
+            )}
+
             <AlertDialog
                 open={deleteDialogOpen}
                 onOpenChange={setDeleteDialogOpen}
@@ -153,8 +167,8 @@ export function RecipeActionMenu({ recipe, userId }: RecipeActionMenuProps) {
                         <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                         <AlertDialogDescription>
                             This action cannot be undone. This will permanently
-                            delete the recipe "{recipe.name}" and all associated
-                            data.
+                            delete the folder "{folder.name}" and all its contents
+                            (subfolders and recipes).
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
@@ -171,18 +185,6 @@ export function RecipeActionMenu({ recipe, userId }: RecipeActionMenuProps) {
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
-
-            {home?.id && (
-                <MoveRecipeToFolderDialog
-                    open={moveDialogOpen}
-                    onOpenChange={setMoveDialogOpen}
-                    recipe={recipe}
-                    homeId={home.id}
-                    onSuccess={() => {
-                        setMoveDialogOpen(false);
-                    }}
-                />
-            )}
         </>
     );
 }

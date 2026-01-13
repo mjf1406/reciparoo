@@ -3,7 +3,7 @@
 "use client";
 
 import { useState } from "react";
-import { MoreVertical, Pencil, Trash2, FolderUp } from "lucide-react";
+import { MoreVertical, Pencil, Trash2 } from "lucide-react";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -22,72 +22,51 @@ import {
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { db } from "@/lib/db/db";
-import { useNavigate } from "@tanstack/react-router";
-import type { InstaQLEntity } from "@instantdb/react";
-import type { AppSchema } from "@/instant.schema";
 import { getUserRoleInHome } from "@/lib/utils";
-import { MoveRecipeToFolderDialog } from "./move-recipe-to-folder-dialog";
+import { EditMealSlotDialog } from "./edit-meal-slot-dialog";
+import type { MealSlotWithRelations } from "@/hooks/use-meal-slots";
 
-type RecipeWithHome = InstaQLEntity<
-    AppSchema,
-    "recipes",
-    {
-        home: {
-            owner: {};
-            admins: {};
-            homeMembers: {};
-            viewers: {};
-        };
-        folder: {};
-    }
->;
-
-interface RecipeActionMenuProps {
-    recipe: RecipeWithHome;
+interface MealSlotActionMenuProps {
+    mealSlot: MealSlotWithRelations;
     userId: string | null | undefined;
+    onEdit?: () => void;
 }
 
-export function RecipeActionMenu({ recipe, userId }: RecipeActionMenuProps) {
+export function MealSlotActionMenu({
+    mealSlot,
+    userId,
+    onEdit,
+}: MealSlotActionMenuProps) {
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-    const [moveDialogOpen, setMoveDialogOpen] = useState(false);
+    const [editDialogOpen, setEditDialogOpen] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
-    const navigate = useNavigate();
 
-    // Get home from recipe relation
-    const home = recipe.home;
+    // Get home from mealSlot relation
+    const home = mealSlot.mealPlan?.home;
 
     // Check permissions - only show menu for owner/admin/member
     const userRole = getUserRoleInHome(home ?? null, userId);
-    const canEditRecipe = userRole && userRole !== "viewer";
+    const canEditMealSlot = userRole && userRole !== "viewer";
 
     // Don't render menu if user doesn't have permission
-    if (!canEditRecipe) {
+    if (!canEditMealSlot) {
         return null;
     }
 
-    const handleEdit = () => {
-        if (!home?.id || !recipe?.id) return;
-        navigate({
-            to: "/home/$homeId/recipes/$recipeId/edit",
-            params: { homeId: home.id, recipeId: recipe.id },
-            search: {},
-        });
-    };
-
     const handleDelete = async () => {
-        if (!recipe?.id) return;
+        if (!mealSlot?.id) return;
 
         setIsDeleting(true);
         try {
-            db.transact(db.tx.recipes[recipe.id].delete());
+            db.transact(db.tx.mealSlots[mealSlot.id].delete());
 
             // Wait a moment for the transaction to complete
             await new Promise((resolve) => setTimeout(resolve, 100));
 
             setDeleteDialogOpen(false);
         } catch (error) {
-            console.error("Error deleting recipe:", error);
-            alert("Failed to delete recipe. Please try again.");
+            console.error("Error deleting meal slot:", error);
+            alert("Failed to delete meal slot. Please try again.");
         } finally {
             setIsDeleting(false);
         }
@@ -99,9 +78,9 @@ export function RecipeActionMenu({ recipe, userId }: RecipeActionMenuProps) {
                 <DropdownMenuTrigger
                     render={
                         <Button
-                            variant="default"
+                            variant="ghost"
                             size="icon"
-                            className="h-8 w-8"
+                            className="h-6 w-6"
                             onClick={(e) => e.stopPropagation()}
                         >
                             <MoreVertical className="h-4 w-4" />
@@ -116,20 +95,11 @@ export function RecipeActionMenu({ recipe, userId }: RecipeActionMenuProps) {
                     <DropdownMenuItem
                         onClick={(e) => {
                             e.stopPropagation();
-                            handleEdit();
+                            setEditDialogOpen(true);
                         }}
                     >
                         <Pencil className="mr-2 h-4 w-4" />
                         Edit
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            setMoveDialogOpen(true);
-                        }}
-                    >
-                        <FolderUp className="mr-2 h-4 w-4" />
-                        Move to Folder
                     </DropdownMenuItem>
                     <DropdownMenuItem
                         variant="destructive"
@@ -144,6 +114,16 @@ export function RecipeActionMenu({ recipe, userId }: RecipeActionMenuProps) {
                 </DropdownMenuContent>
             </DropdownMenu>
 
+            <EditMealSlotDialog
+                mealSlot={mealSlot}
+                open={editDialogOpen}
+                onOpenChange={setEditDialogOpen}
+                onSuccess={() => {
+                    setEditDialogOpen(false);
+                    onEdit?.();
+                }}
+            />
+
             <AlertDialog
                 open={deleteDialogOpen}
                 onOpenChange={setDeleteDialogOpen}
@@ -153,8 +133,8 @@ export function RecipeActionMenu({ recipe, userId }: RecipeActionMenuProps) {
                         <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                         <AlertDialogDescription>
                             This action cannot be undone. This will permanently
-                            delete the recipe "{recipe.name}" and all associated
-                            data.
+                            delete the meal/snack "{mealSlot.name}" and all its
+                            recipe assignments.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
@@ -171,18 +151,6 @@ export function RecipeActionMenu({ recipe, userId }: RecipeActionMenuProps) {
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
-
-            {home?.id && (
-                <MoveRecipeToFolderDialog
-                    open={moveDialogOpen}
-                    onOpenChange={setMoveDialogOpen}
-                    recipe={recipe}
-                    homeId={home.id}
-                    onSuccess={() => {
-                        setMoveDialogOpen(false);
-                    }}
-                />
-            )}
         </>
     );
 }

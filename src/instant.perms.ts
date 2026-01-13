@@ -101,6 +101,42 @@ const dataBind = [
     // User is a viewer of the home that the folder belongs to
     "isFolderHomeViewer",
     "auth.id in data.ref('home.viewers.id')",
+    // User is owner of the home that the meal plan belongs to
+    "isMealPlanHomeOwner",
+    "auth.id in data.ref('home.owner.id')",
+    // User is admin of the home that the meal plan belongs to
+    "isMealPlanHomeAdmin",
+    "auth.id in data.ref('home.admins.id')",
+    // User is a member of the home that the meal plan belongs to
+    "isMealPlanHomeMember",
+    "auth.id in data.ref('home.homeMembers.id')",
+    // User is a viewer of the home that the meal plan belongs to
+    "isMealPlanHomeViewer",
+    "auth.id in data.ref('home.viewers.id')",
+    // User is owner of the home that the meal slot's meal plan belongs to
+    "isMealSlotHomeOwner",
+    "auth.id in data.ref('mealPlan.home.owner.id')",
+    // User is admin of the home that the meal slot's meal plan belongs to
+    "isMealSlotHomeAdmin",
+    "auth.id in data.ref('mealPlan.home.admins.id')",
+    // User is a member of the home that the meal slot's meal plan belongs to
+    "isMealSlotHomeMember",
+    "auth.id in data.ref('mealPlan.home.homeMembers.id')",
+    // User is a viewer of the home that the meal slot's meal plan belongs to
+    "isMealSlotHomeViewer",
+    "auth.id in data.ref('mealPlan.home.viewers.id')",
+    // User is owner of the home that the meal slot recipe's meal slot's meal plan belongs to
+    "isMealSlotRecipeHomeOwner",
+    "auth.id in data.ref('mealSlot.mealPlan.home.owner.id')",
+    // User is admin of the home that the meal slot recipe's meal slot's meal plan belongs to
+    "isMealSlotRecipeHomeAdmin",
+    "auth.id in data.ref('mealSlot.mealPlan.home.admins.id')",
+    // User is a member of the home that the meal slot recipe's meal slot's meal plan belongs to
+    "isMealSlotRecipeHomeMember",
+    "auth.id in data.ref('mealSlot.mealPlan.home.homeMembers.id')",
+    // User is a viewer of the home that the meal slot recipe's meal slot's meal plan belongs to
+    "isMealSlotRecipeHomeViewer",
+    "auth.id in data.ref('mealSlot.mealPlan.home.viewers.id')",
 ];
 
 const rules = {
@@ -178,6 +214,33 @@ const rules = {
             view: "isAuthenticated && (isFolderHomeOwner || isFolderHomeAdmin || isFolderHomeMember || isFolderHomeViewer)",
             update: "isAuthenticated && (isFolderHomeOwner || isFolderHomeAdmin || isFolderHomeMember)",
             delete: "isAuthenticated && (isFolderHomeOwner || isFolderHomeAdmin || isFolderHomeMember)",
+        },
+        bind: dataBind,
+    },
+    mealPlans: {
+        allow: {
+            create: "isAuthenticated && (isMealPlanHomeOwner || isMealPlanHomeAdmin || isMealPlanHomeMember)",
+            view: "isAuthenticated && (isMealPlanHomeOwner || isMealPlanHomeAdmin || isMealPlanHomeMember || isMealPlanHomeViewer)",
+            update: "isAuthenticated && (isMealPlanHomeOwner || isMealPlanHomeAdmin || isMealPlanHomeMember)",
+            delete: "isAuthenticated && (isMealPlanHomeOwner || isMealPlanHomeAdmin)",
+        },
+        bind: dataBind,
+    },
+    mealSlots: {
+        allow: {
+            create: "isAuthenticated && (isMealSlotHomeOwner || isMealSlotHomeAdmin || isMealSlotHomeMember)",
+            view: "isAuthenticated && (isMealSlotHomeOwner || isMealSlotHomeAdmin || isMealSlotHomeMember || isMealSlotHomeViewer)",
+            update: "isAuthenticated && (isMealSlotHomeOwner || isMealSlotHomeAdmin || isMealSlotHomeMember)",
+            delete: "isAuthenticated && (isMealSlotHomeOwner || isMealSlotHomeAdmin || isMealSlotHomeMember)",
+        },
+        bind: dataBind,
+    },
+    mealSlotRecipes: {
+        allow: {
+            create: "isAuthenticated && (isMealSlotRecipeHomeOwner || isMealSlotRecipeHomeAdmin || isMealSlotRecipeHomeMember)",
+            view: "isAuthenticated && (isMealSlotRecipeHomeOwner || isMealSlotRecipeHomeAdmin || isMealSlotRecipeHomeMember || isMealSlotRecipeHomeViewer)",
+            update: "isAuthenticated && (isMealSlotRecipeHomeOwner || isMealSlotRecipeHomeAdmin || isMealSlotRecipeHomeMember)",
+            delete: "isAuthenticated && (isMealSlotRecipeHomeOwner || isMealSlotRecipeHomeAdmin || isMealSlotRecipeHomeMember)",
         },
         bind: dataBind,
     },

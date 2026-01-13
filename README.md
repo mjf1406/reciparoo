@@ -9,6 +9,10 @@
 
 ## Change Log
 
+### 2026/01/13
+
+- UX: added meal plan feature (big release)
+
 ### 2026/01/11
 
 - UX: added folders and sub-folders

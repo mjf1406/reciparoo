@@ -11,6 +11,7 @@
 
 ### 2026/01/13
 
+- BUG: meal slots now correctly display all recipes, even if they don't have an image
 - UX: added meal plan feature (big release)
 
 ### 2026/01/11

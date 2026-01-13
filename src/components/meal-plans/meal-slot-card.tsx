@@ -31,10 +31,10 @@ export function MealSlotCard({
     const Icon = isMeal ? UtensilsCrossed : Cookie;
     const recipes = mealSlot.mealSlotRecipes || [];
 
-    // Get first 4 recipes with images for the preview grid
-    const recipesWithImages = recipes
+    // Get first 4 recipes for the preview grid (with or without images)
+    const recipePreviews = recipes
         .map((msr: any) => msr.recipe)
-        .filter((r: any) => r?.imageURL)
+        .filter((r: any) => r) // Filter out null/undefined recipes
         .slice(0, 4);
 
     // Get the single day for this slot (should only be one day now)
@@ -88,19 +88,23 @@ export function MealSlotCard({
                             />
                         </div>
                     </div>
-                    {recipesWithImages.length > 0 && (
+                    {recipePreviews.length > 0 && (
                         <div className="flex gap-2 mt-2 flex-wrap">
-                            {recipesWithImages.map((recipe: any) => (
+                            {recipePreviews.map((recipe: any) => (
                                 <div
                                     key={recipe.id}
                                     className="flex flex-col items-center gap-1"
                                 >
-                                    <div className="w-10 h-10 rounded overflow-hidden flex-shrink-0">
-                                        <img
-                                            src={recipe.imageURL}
-                                            alt={recipe.name}
-                                            className="w-full h-full object-cover"
-                                        />
+                                    <div className="w-10 h-10 rounded overflow-hidden flex-shrink-0 bg-muted flex items-center justify-center">
+                                        {recipe.imageURL ? (
+                                            <img
+                                                src={recipe.imageURL}
+                                                alt={recipe.name}
+                                                className="w-full h-full object-cover"
+                                            />
+                                        ) : (
+                                            <ImageIcon className="w-5 h-5 text-muted-foreground" />
+                                        )}
                                     </div>
                                     <span
                                         className="text-[10px] text-muted-foreground truncate max-w-[60px] text-center"
@@ -166,19 +170,23 @@ export function MealSlotCard({
 
                 {/* Recipe Preview Grid */}
                 <div className="w-full bg-muted/30 rounded-lg overflow-hidden">
-                    {recipesWithImages.length > 0 ? (
+                    {recipePreviews.length > 0 ? (
                         <div className="grid grid-cols-2 gap-1 p-1">
-                            {recipesWithImages.map((recipe: any) => (
+                            {recipePreviews.map((recipe: any) => (
                                 <div
                                     key={recipe.id}
                                     className="flex flex-col overflow-hidden"
                                 >
-                                    <div className="aspect-square relative overflow-hidden bg-muted rounded">
-                                        <img
-                                            src={recipe.imageURL}
-                                            alt={recipe.name || "Recipe"}
-                                            className="absolute inset-0 w-full h-full object-cover"
-                                        />
+                                    <div className="aspect-square relative overflow-hidden bg-muted rounded flex items-center justify-center">
+                                        {recipe.imageURL ? (
+                                            <img
+                                                src={recipe.imageURL}
+                                                alt={recipe.name || "Recipe"}
+                                                className="absolute inset-0 w-full h-full object-cover"
+                                            />
+                                        ) : (
+                                            <ImageIcon className="w-8 h-8 text-muted-foreground opacity-50" />
+                                        )}
                                     </div>
                                     <span
                                         className="text-[10px] text-muted-foreground truncate mt-0.5 px-0.5"

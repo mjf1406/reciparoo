@@ -1,24 +1,19 @@
 /** @format */
 
 const CACHE_NAME = "reciparoo-v1";
-const urlsToCache = ["/", "/src/main.tsx", "/src/style.css"];
+const urlsToCache = ["/", "/manifest.json"];
 
 // Install event - cache resources
 self.addEventListener("install", (event) => {
     event.waitUntil(
         caches.open(CACHE_NAME).then((cache) => {
-            return cache.addAll(urlsToCache);
+            return cache.addAll(urlsToCache).catch((err) => {
+                console.log("Cache addAll failed:", err);
+            });
         })
     );
-});
-
-// Fetch event - serve from cache, fallback to network
-self.addEventListener("fetch", (event) => {
-    event.respondWith(
-        caches.match(event.request).then((response) => {
-            return response || fetch(event.request);
-        })
-    );
+    // Force the waiting service worker to become the active service worker
+    self.skipWaiting();
 });
 
 // Activate event - clean up old caches
@@ -32,6 +27,28 @@ self.addEventListener("activate", (event) => {
                     }
                 })
             );
+        })
+    );
+    // Take control of all pages immediately
+    return self.clients.claim();
+});
+
+// Fetch event - serve from cache, fallback to network
+self.addEventListener("fetch", (event) => {
+    // Only handle GET requests
+    if (event.request.method !== "GET") {
+        return;
+    }
+
+    event.respondWith(
+        caches.match(event.request).then((response) => {
+            // Return cached version or fetch from network
+            return response || fetch(event.request).catch(() => {
+                // If fetch fails and it's a navigation request, return a fallback
+                if (event.request.mode === "navigate") {
+                    return caches.match("/");
+                }
+            });
         })
     );
 });

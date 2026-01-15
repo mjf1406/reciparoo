@@ -20,6 +20,12 @@ const dataBind = [
     // User is still the owner of the data
     "isStillOwner",
     "auth.id in newData.ref('owner.id') || auth.id == newData.id",
+    // User is home member in user's table
+    "isUserHomeMember",
+    "auth.id in data.ref('home.id')",
+    // User is still a home member in user's table
+    "isStillUserHomeMember",
+    "auth.id in newData.ref('homeMembers.id')",
     // User is a member of the home
     "isHomeMember",
     "auth.id in data.ref('homeMembers.id')",
@@ -27,16 +33,16 @@ const dataBind = [
     "isStillHomeMember",
     "auth.id in newData.ref('homeMembers.id')",
     // User is an admin of the data (home admins)
-    "isAdmin",
+    "isHomeAdmin",
     "auth.id in data.ref('admins.id')",
     // User is still an admin of the data
-    "isStillAdmin",
+    "isStillHomeAdmin",
     "auth.id in newData.ref('admins.id')",
     // User is a viewer of the home
-    "isViewer",
+    "isHomeViewer",
     "auth.id in data.ref('viewers.id')",
     // User is still a viewer of the home
-    "isStillViewer",
+    "isStillHomeViewer",
     "auth.id in newData.ref('viewers.id')",
     // User is owner of the home that the join code belongs to
     "isJoinCodeHomeOwner",
@@ -138,6 +144,23 @@ const dataBind = [
     "isMealSlotRecipeHomeViewer",
     "auth.id in data.ref('mealSlot.mealPlan.home.viewers.id')",
 ];
+// ============================================================
+//                  USER-HOME RELATIONSHIPS
+// ============================================================
+const userBind = [
+    // User being viewed is a member of a home where auth user is owner/admin/member/viewer
+    "isMemberInMyHome",
+    "auth.id in data.ref('memberHomes.owner.id') || auth.id in data.ref('memberHomes.admins.id') || auth.id in data.ref('memberHomes.homeMembers.id') || auth.id in data.ref('memberHomes.viewers.id')",
+    // User being viewed is an admin of a home where auth user is owner/admin/member/viewer
+    "isAdminInMyHome",
+    "auth.id in data.ref('adminHomes.owner.id') || auth.id in data.ref('adminHomes.admins.id') || auth.id in data.ref('adminHomes.homeMembers.id') || auth.id in data.ref('adminHomes.viewers.id')",
+    // User being viewed is a viewer of a home where auth user is owner/admin/member/viewer
+    "isViewerInMyHome",
+    "auth.id in data.ref('viewerHomes.owner.id') || auth.id in data.ref('viewerHomes.admins.id') || auth.id in data.ref('viewerHomes.homeMembers.id') || auth.id in data.ref('viewerHomes.viewers.id')",
+    // User being viewed is an owner of a home where auth user is owner/admin/member/viewer
+    "isOwnerInMyHome",
+    "auth.id in data.ref('homes.owner.id') || auth.id in data.ref('homes.admins.id') || auth.id in data.ref('homes.homeMembers.id') || auth.id in data.ref('homes.viewers.id')",
+];
 
 const rules = {
     attrs: {
@@ -156,18 +179,18 @@ const rules = {
     },
     $users: {
         allow: {
-            view: "isAuthenticated",
+            view: "isAuthenticated && (auth.id == data.id || isMemberInMyHome || isAdminInMyHome || isViewerInMyHome || isOwnerInMyHome)",
             create: "false",
             update: "isAuthenticated && isOwner && isStillOwner",
             delete: "false",
         },
-        bind: dataBind,
+        bind: [...dataBind, ...userBind],
     },
     homes: {
         allow: {
             create: "isAuthenticated",
-            view: "isAuthenticated && (isOwner || isAdmin || isHomeMember || isViewer)",
-            update: "isAuthenticated && (isOwner || isAdmin)",
+            view: "isAuthenticated && (isOwner || isHomeAdmin || isHomeMember || isHomeViewer)",
+            update: "isAuthenticated && (isOwner || isHomeAdmin)",
             delete: "isAuthenticated && isOwner",
         },
         bind: dataBind,

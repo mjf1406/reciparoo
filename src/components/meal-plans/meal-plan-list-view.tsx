@@ -37,8 +37,11 @@ export function MealPlanListView({
     onSlotClick,
 }: MealPlanListViewProps) {
     const orderedDays = getOrderedDays(startDayOfWeek);
+    // Get current day of week (0 = Sunday, 6 = Saturday)
+    const currentDayOfWeek = new Date().getDay() as DayOfWeek;
+    // Initialize with only current day expanded
     const [expandedDays, setExpandedDays] = useState<Set<DayOfWeek>>(
-        new Set(orderedDays)
+        new Set([currentDayOfWeek])
     );
 
     // Get slots for a specific day
@@ -68,17 +71,30 @@ export function MealPlanListView({
         setExpandedDays(new Set());
     };
 
+    const currentDate = new Date();
+    const dayName = currentDate.toLocaleDateString("en-US", { weekday: "long" });
+    const dateString = currentDate.toLocaleDateString("en-US", {
+        month: "long",
+        day: "numeric",
+        year: "numeric",
+    });
+
     return (
         <div className="space-y-4">
             {/* Controls */}
             <div className="flex justify-between items-center">
-                <div className="flex gap-2">
-                    <Button variant="ghost" size="sm" onClick={expandAll}>
-                        Expand All
-                    </Button>
-                    <Button variant="ghost" size="sm" onClick={collapseAll}>
-                        Collapse All
-                    </Button>
+                <div className="flex items-center gap-4">
+                    <div className="text-sm font-medium text-muted-foreground">
+                        {dayName}, {dateString}
+                    </div>
+                    <div className="flex gap-2">
+                        <Button variant="ghost" size="sm" onClick={expandAll}>
+                            Expand All
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={collapseAll}>
+                            Collapse All
+                        </Button>
+                    </div>
                 </div>
                 <Button onClick={onAddSlot}>
                     <Plus className="mr-2 h-4 w-4" />

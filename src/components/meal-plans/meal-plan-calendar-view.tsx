@@ -40,10 +40,23 @@ export function MealPlanCalendarView({
         );
     };
 
+    const currentDate = new Date();
+    const dayName = currentDate.toLocaleDateString("en-US", {
+        weekday: "long",
+    });
+    const dateString = currentDate.toLocaleDateString("en-US", {
+        month: "long",
+        day: "numeric",
+        year: "numeric",
+    });
+
     return (
         <div className="space-y-4">
             {/* Add Slot Button */}
-            <div className="flex justify-end">
+            <div className="flex justify-between items-center">
+                <div className="text-sm font-medium text-muted-foreground">
+                    {dayName}, {dateString}
+                </div>
                 <Button onClick={onAddSlot}>
                     <Plus className="mr-2 h-4 w-4" />
                     Add Meal/Snack
@@ -54,9 +67,15 @@ export function MealPlanCalendarView({
             <div className="grid grid-cols-7 gap-2">
                 {orderedDays.map((day) => {
                     const daySlots = getSlotsForDay(day);
+                    // Get current day of week (0 = Sunday, 6 = Saturday)
+                    const currentDayOfWeek = new Date().getDay() as DayOfWeek;
+                    const isCurrentDay = day === currentDayOfWeek;
 
                     return (
-                        <Card key={day} className="min-h-[300px]">
+                        <Card
+                            key={day}
+                            className={`min-h-[300px] ${!isCurrentDay ? "opacity-60" : ""}`}
+                        >
                             <CardHeader className="py-3 px-3">
                                 <CardTitle className="text-sm font-medium text-center">
                                     {getDayName(day)}

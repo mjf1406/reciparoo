@@ -47,11 +47,21 @@ const ImageSkeleton = React.forwardRef<HTMLImageElement, ImageSkeletonProps>(
             onError?.(e);
         };
 
-        // Reset loading state when src changes
+        // Reset loading state when src changes; handle already-cached images
         React.useEffect(() => {
-            if (src) {
-                setIsLoading(true);
+            if (!src) {
+                setIsLoading(false);
                 setHasError(false);
+                return;
+            }
+
+            setIsLoading(true);
+            setHasError(false);
+
+            const img = imgRef.current;
+            if (img?.complete) {
+                setIsLoading(img.naturalWidth === 0);
+                setHasError(img.naturalWidth === 0);
             }
         }, [src]);
 

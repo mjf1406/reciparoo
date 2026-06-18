@@ -2,9 +2,11 @@
 
 "use client";
 
-import React, { createContext, useContext } from "react";
+import React, { createContext, useContext, useEffect } from "react";
+import { useNavigate } from "@tanstack/react-router";
 import { db } from "@/lib/db/db";
 import { ADMIN_EMAIL } from "@/lib/constants";
+import { unauthorizedSearch } from "@/lib/auth/unauthorized";
 
 interface AuthContextValue {
     user: {
@@ -61,6 +63,7 @@ export default function AuthProvider({
     }
 
     const { user, isLoading: authLoading, error: authError } = db.useAuth();
+    const navigate = useNavigate();
 
     const { data, isLoading: dataLoading } = db.useQuery(
         user?.id
@@ -77,6 +80,13 @@ export default function AuthProvider({
     const canEdit = email === ADMIN_EMAIL;
     const isLoading = authLoading || (user?.id ? dataLoading : false);
 
+    useEffect(() => {
+        if (user?.id && user.email && user.email !== ADMIN_EMAIL) {
+            navigate({ to: "/", search: unauthorizedSearch() });
+            db.auth.signOut();
+        }
+    }, [user?.id, user?.email, navigate]);
+
     const value: AuthContextValue = {
         user: {
             created_at: userData?.created || null,
@@ -91,7 +101,7 @@ export default function AuthProvider({
             plan: userData?.plan || "free",
         },
         isLoading,
-        isAuthenticated: !!user?.id,
+        isAuthenticated: !!user?.id && email === ADMIN_EMAIL,
         canEdit,
         error: authError ? { message: authError.message } : null,
     };

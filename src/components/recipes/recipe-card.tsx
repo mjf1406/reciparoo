@@ -65,7 +65,7 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
     const handleCardClick = () => {
         if (recipe.id) {
             navigate({
-                to: "/recipes/$recipeId",
+                to: "/$recipeId",
                 params: { recipeId: recipe.id },
             });
         }

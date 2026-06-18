@@ -3,13 +3,17 @@
 "use client";
 
 import { useState, useRef } from "react";
+import { useNavigate } from "@tanstack/react-router";
 import { v4 as uuidv4 } from "uuid";
 import { GoogleLogin } from "@react-oauth/google";
 import { jwtDecode } from "jwt-decode";
 import { db } from "@/lib/db/db";
 import { Button } from "@/components/ui/button";
+import { ADMIN_EMAIL } from "@/lib/constants";
+import { unauthorizedSearch } from "@/lib/auth/unauthorized";
 
 interface GoogleJwtPayload {
+    email?: string;
     given_name?: string;
     family_name?: string;
 }
@@ -18,7 +22,8 @@ const GOOGLE_CLIENT_NAME = import.meta.env.VITE_GOOGLE_CLIENT_NAME!;
 
 function handleGoogleSuccess(
     credentialResponse: { credential?: string },
-    nonce: string
+    nonce: string,
+    onUnauthorized: () => void
 ) {
     if (!GOOGLE_CLIENT_NAME) {
         console.error("Google Client Name is not configured");
@@ -37,8 +42,16 @@ function handleGoogleSuccess(
     // Store JWT token temporarily
     sessionStorage.setItem("google_id_token", credentialResponse.credential);
 
-    // Decode JWT to extract user's name
+    // Decode JWT to extract user's email and name
     const decoded = jwtDecode<GoogleJwtPayload>(credentialResponse.credential);
+    const email = decoded.email || "";
+
+    if (email !== ADMIN_EMAIL) {
+        sessionStorage.removeItem("google_id_token");
+        onUnauthorized();
+        return;
+    }
+
     const firstName = decoded.given_name || "";
     const lastName = decoded.family_name || "";
 
@@ -78,12 +91,8 @@ function handleGoogleSuccess(
         })
         .catch((err) => {
             console.error("Error signing in with Google:", err);
-            // Clear token on error
             sessionStorage.removeItem("google_id_token");
-            alert(
-                "Failed to sign in with Google: " +
-                    (err.body?.message || err.message)
-            );
+            onUnauthorized();
         });
 }
 
@@ -94,6 +103,11 @@ function handleGoogleError() {
 export function GoogleOAuthButton() {
     const googleButtonRef = useRef<HTMLDivElement>(null);
     const [nonce] = useState(() => uuidv4());
+    const navigate = useNavigate();
+
+    const handleUnauthorized = () => {
+        navigate({ to: "/", search: unauthorizedSearch() });
+    };
 
     const handleGoogleButtonClick = () => {
         const googleButton = googleButtonRef.current?.querySelector(
@@ -112,7 +126,11 @@ export function GoogleOAuthButton() {
             >
                 <GoogleLogin
                     onSuccess={(credentialResponse) =>
-                        handleGoogleSuccess(credentialResponse, nonce)
+                        handleGoogleSuccess(
+                            credentialResponse,
+                            nonce,
+                            handleUnauthorized
+                        )
                     }
                     onError={handleGoogleError}
                     nonce={nonce}
@@ -160,6 +178,11 @@ export function GoogleOAuthButton() {
 export function GoogleOAuthButtonSmall() {
     const googleButtonRef = useRef<HTMLDivElement>(null);
     const [nonce] = useState(() => uuidv4());
+    const navigate = useNavigate();
+
+    const handleUnauthorized = () => {
+        navigate({ to: "/", search: unauthorizedSearch() });
+    };
 
     const handleGoogleButtonClick = () => {
         const googleButton = googleButtonRef.current?.querySelector(
@@ -178,7 +201,11 @@ export function GoogleOAuthButtonSmall() {
             >
                 <GoogleLogin
                     onSuccess={(credentialResponse) =>
-                        handleGoogleSuccess(credentialResponse, nonce)
+                        handleGoogleSuccess(
+                            credentialResponse,
+                            nonce,
+                            handleUnauthorized
+                        )
                     }
                     onError={handleGoogleError}
                     nonce={nonce}

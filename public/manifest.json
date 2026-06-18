@@ -2,7 +2,7 @@
   "id": "/",
   "name": "Reciparoo",
   "short_name": "Reciparoo",
-  "description": "Organize your recipes, plan meals, manage your pantry, and create grocery lists all in one place.",
+  "description": "Organize and share your recipes in one place.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

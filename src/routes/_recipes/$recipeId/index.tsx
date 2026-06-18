@@ -46,7 +46,7 @@ import {
     shareRecipe,
 } from "@/lib/utils/recipe-sharing";
 
-export const Route = createFileRoute("/recipes/$recipeId/")({
+export const Route = createFileRoute("/_recipes/$recipeId/")({
     component: RecipeDetailPage,
 });
 
@@ -349,7 +349,7 @@ function RecipeDetailPage() {
             <Breadcrumb
                 items={[
                     { label: "Home", to: "/" },
-                    { label: "Recipes", to: "/recipes" },
+                    { label: "Recipes", to: "/" },
                     { label: recipe.name || "Recipe" },
                 ]}
                 className="mb-6"
@@ -371,7 +371,7 @@ function RecipeDetailPage() {
                                     variant="outline"
                                     onClick={() => {
                                         navigate({
-                                            to: "/recipes/$recipeId/edit",
+                                            to: "/$recipeId/edit",
                                             params: { recipeId },
                                         });
                                     }}

@@ -1,6 +1,6 @@
 /** @format */
 
-import { createFileRoute, Outlet, useLocation, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import useRecipes from "@/hooks/use-recipes";
 import useFolders from "@/hooks/use-folders";
 import { Loader2, Plus, BookOpen, Folder } from "lucide-react";
@@ -10,11 +10,13 @@ import { useAuthContext } from "@/components/auth/auth-provider";
 import { RecipeCard } from "@/components/recipes/recipe-card";
 import { FolderCard } from "@/components/recipes/folder-card";
 import { CreateFolderDialog } from "@/components/recipes/create-folder-dialog";
+import { UnauthorizedSignInDialog } from "@/components/auth/unauthorized-sign-in-dialog";
 import { Navbar } from "@/components/layout/navbar";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { db } from "@/lib/db/db";
 import type { InstaQLEntity } from "@instantdb/react";
 import type { AppSchema } from "@/instant.schema";
+import { UNAUTHORIZED_SEARCH_PARAM } from "@/lib/auth/unauthorized";
 
 type FolderWithRelations = InstaQLEntity<
     AppSchema,
@@ -24,21 +26,36 @@ type FolderWithRelations = InstaQLEntity<
     }
 >;
 
-export const Route = createFileRoute("/recipes")({
+export const Route = createFileRoute("/_recipes/")({
     component: RecipesPage,
-    validateSearch: (search: Record<string, unknown>): { folder?: string } => ({
+    validateSearch: (
+        search: Record<string, unknown>
+    ): { folder?: string; unauthorized?: string } => ({
         folder: (search.folder as string) || undefined,
+        unauthorized:
+            search[UNAUTHORIZED_SEARCH_PARAM] === "1" ? "1" : undefined,
     }),
 });
 
 function RecipesPage() {
-    const { folder: folderId } = Route.useSearch();
+    const { folder: folderId, unauthorized } = Route.useSearch();
     const { recipes, isLoading: recipesLoading, error: recipesError } = useRecipes(folderId || null);
     const { folders, isLoading: foldersLoading, error: foldersError } = useFolders(folderId || null);
     const { canEdit } = useAuthContext();
-    const location = useLocation();
     const navigate = useNavigate();
     const [createFolderOpen, setCreateFolderOpen] = useState(false);
+    const [unauthorizedOpen, setUnauthorizedOpen] = useState(false);
+
+    useEffect(() => {
+        if (unauthorized === "1") {
+            setUnauthorizedOpen(true);
+            navigate({
+                to: "/",
+                search: folderId ? { folder: folderId } : {},
+                replace: true,
+            });
+        }
+    }, [unauthorized, folderId, navigate]);
 
     const { data: folderData } = db.useQuery(
         folderId
@@ -68,44 +85,50 @@ function RecipesPage() {
     const isLoading = recipesLoading || foldersLoading;
     const error = recipesError || foldersError;
 
-    const expectedPath = "/recipes";
-    const isExactRoute = location.pathname === expectedPath;
-
-    if (!isExactRoute) {
-        return <Outlet />;
-    }
+    const unauthorizedDialog = (
+        <UnauthorizedSignInDialog
+            open={unauthorizedOpen}
+            onOpenChange={setUnauthorizedOpen}
+        />
+    );
 
     if (isLoading) {
         return (
-            <div className="min-h-screen bg-background">
-                <Navbar />
-                <div className="flex items-center justify-center h-screen">
-                    <Loader2 className="w-4 h-4 ml-2 animate-spin" /> Loading...
+            <>
+                <div className="min-h-screen bg-background">
+                    <Navbar />
+                    <div className="flex items-center justify-center h-screen">
+                        <Loader2 className="w-4 h-4 ml-2 animate-spin" /> Loading...
+                    </div>
                 </div>
-            </div>
+                {unauthorizedDialog}
+            </>
         );
     }
 
     if (error) {
         return (
-            <div className="min-h-screen bg-background">
-                <Navbar />
-                <div className="container mx-auto px-4 py-8">
-                    Error: {error.message}
+            <>
+                <div className="min-h-screen bg-background">
+                    <Navbar />
+                    <div className="container mx-auto px-4 py-8">
+                        Error: {error.message}
+                    </div>
                 </div>
-            </div>
+                {unauthorizedDialog}
+            </>
         );
     }
 
     const breadcrumbItems = [
         { label: "Home", to: "/" },
-        { label: "Recipes", to: "/recipes" },
+        { label: "Recipes", to: "/" },
     ];
 
     folderPath.forEach((folder) => {
         breadcrumbItems.push({
             label: folder.name,
-            to: `/recipes?folder=${folder.id}`,
+            to: `/?folder=${folder.id}`,
         });
     });
 
@@ -113,7 +136,7 @@ function RecipesPage() {
     const isEmpty = totalItems === 0;
 
     const handleCreateRecipe = () => {
-        navigate({ to: "/recipes/new" });
+        navigate({ to: "/new" });
     };
 
     return (
@@ -205,6 +228,8 @@ function RecipesPage() {
                     onSuccess={() => setCreateFolderOpen(false)}
                 />
             </main>
+
+            {unauthorizedDialog}
         </div>
     );
 }

@@ -55,7 +55,7 @@ export function RecipeActionMenu({ recipe }: RecipeActionMenuProps) {
     const handleEdit = () => {
         if (!recipe?.id) return;
         navigate({
-            to: "/recipes/$recipeId/edit",
+            to: "/$recipeId/edit",
             params: { recipeId: recipe.id },
         });
     };

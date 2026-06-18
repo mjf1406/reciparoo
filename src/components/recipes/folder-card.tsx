@@ -49,10 +49,18 @@ export function FolderCard({ folder }: FolderCardProps) {
     const handleCardClick = () => {
         if (folder.id) {
             navigate({
-                to: "/recipes",
+                to: "/",
                 search: { folder: folder.id },
             });
         }
+    };
+
+    const handleRecipeClick = (e: React.MouseEvent, recipeId: string) => {
+        e.stopPropagation();
+        navigate({
+            to: "/$recipeId",
+            params: { recipeId },
+        });
     };
 
     return (
@@ -105,7 +113,10 @@ export function FolderCard({ folder }: FolderCardProps) {
                             {recipesWithImages.map((recipe: any, index: number) => (
                                 <div
                                     key={recipe.id || index}
-                                    className="flex flex-col overflow-hidden"
+                                    className="flex flex-col overflow-hidden cursor-pointer rounded hover:opacity-90 hover:ring-2 hover:ring-primary/50 transition-all"
+                                    onClick={(e) =>
+                                        recipe.id && handleRecipeClick(e, recipe.id)
+                                    }
                                 >
                                     <div className="aspect-square relative overflow-hidden bg-muted rounded">
                                         <img

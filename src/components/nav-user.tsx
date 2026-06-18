@@ -70,7 +70,7 @@ export function NavUser({
 }
 
 function NavUserSignedIn({ user: userProp }: { user?: User }) {
-    const { user: contextUser, canEdit } = useAuthContext();
+    const { user: contextUser } = useAuthContext();
     const navigate = useNavigate();
     const user = userProp ?? contextUser;
     const displayName =
@@ -144,11 +144,6 @@ function NavUserSignedIn({ user: userProp }: { user?: User }) {
                                 {user?.email && (
                                     <span className="truncate text-xs text-muted-foreground">
                                         {user.email}
-                                    </span>
-                                )}
-                                {!canEdit && (
-                                    <span className="truncate text-xs text-muted-foreground">
-                                        View only
                                     </span>
                                 )}
                             </div>

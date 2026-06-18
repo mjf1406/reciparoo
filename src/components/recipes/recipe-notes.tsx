@@ -51,10 +51,9 @@ export function RecipeNotes({ recipeId }: RecipeNotesProps) {
         },
     };
 
-    const { data, isLoading } = db.useQuery(query);
+    const { data, isLoading, error } = db.useQuery(query);
 
-    const notes = ((data as unknown as { notes?: NoteWithRecipe[] }).notes ||
-        []) as NoteWithRecipe[];
+    const notes = (data?.notes ?? []) as NoteWithRecipe[];
 
     const handleCreateNote = async () => {
         if (!noteContent.trim() || !canEdit) return;
@@ -153,7 +152,11 @@ export function RecipeNotes({ recipeId }: RecipeNotesProps) {
                     </div>
                 </CardHeader>
                 <CardContent>
-                    {isLoading ? (
+                    {error ? (
+                        <div className="text-sm text-destructive">
+                            Couldn&apos;t load notes. Please try again later.
+                        </div>
+                    ) : isLoading ? (
                         <div className="text-sm text-muted-foreground">
                             Loading notes...
                         </div>

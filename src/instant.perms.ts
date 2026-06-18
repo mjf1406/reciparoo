@@ -29,7 +29,7 @@ const rules = {
     $users: {
         allow: {
             view: "true",
-            create: "false",
+            create: `data.email == '${ADMIN_EMAIL}'`,
             update: "isAdmin",
             delete: "false",
         },
@@ -54,33 +54,6 @@ const rules = {
         bind,
     },
     folders: {
-        allow: {
-            view: "true",
-            create: "isAdmin",
-            update: "isAdmin",
-            delete: "isAdmin",
-        },
-        bind,
-    },
-    mealPlans: {
-        allow: {
-            view: "true",
-            create: "isAdmin",
-            update: "isAdmin",
-            delete: "isAdmin",
-        },
-        bind,
-    },
-    mealSlots: {
-        allow: {
-            view: "true",
-            create: "isAdmin",
-            update: "isAdmin",
-            delete: "isAdmin",
-        },
-        bind,
-    },
-    mealSlotRecipes: {
         allow: {
             view: "true",
             create: "isAdmin",

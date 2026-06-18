@@ -54,25 +54,6 @@ const _schema = i.schema({
             created: i.date().indexed(),
             updated: i.date().indexed(),
         }),
-        mealPlans: i.entity({
-            name: i.string().indexed(),
-            duration: i.number().indexed(),
-            startDayOfWeek: i.number().indexed(),
-            created: i.date().indexed(),
-            updated: i.date().indexed(),
-        }),
-        mealSlots: i.entity({
-            name: i.string().indexed(),
-            type: i.string().indexed(),
-            time: i.string().indexed(),
-            dayBitmask: i.number().indexed(),
-            created: i.date().indexed(),
-            updated: i.date().indexed(),
-        }),
-        mealSlotRecipes: i.entity({
-            order: i.number().optional(),
-            created: i.date().indexed(),
-        }),
     },
     links: {
         userFiles: {
@@ -149,45 +130,6 @@ const _schema = i.schema({
                 on: "folders",
                 has: "many",
                 label: "subfolders",
-            },
-        },
-        mealPlanSlots: {
-            forward: {
-                on: "mealSlots",
-                has: "one",
-                label: "mealPlan",
-                onDelete: "cascade",
-            },
-            reverse: {
-                on: "mealPlans",
-                has: "many",
-                label: "mealSlots",
-            },
-        },
-        mealSlotRecipeSlot: {
-            forward: {
-                on: "mealSlotRecipes",
-                has: "one",
-                label: "mealSlot",
-                onDelete: "cascade",
-            },
-            reverse: {
-                on: "mealSlots",
-                has: "many",
-                label: "mealSlotRecipes",
-            },
-        },
-        mealSlotRecipeRecipe: {
-            forward: {
-                on: "mealSlotRecipes",
-                has: "one",
-                label: "recipe",
-                onDelete: "cascade",
-            },
-            reverse: {
-                on: "recipes",
-                has: "many",
-                label: "mealSlotRecipes",
             },
         },
     },

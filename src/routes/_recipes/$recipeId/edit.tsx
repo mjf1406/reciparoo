@@ -2,17 +2,21 @@
 
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
+import useRecipe from "@/hooks/use-recipe";
 import { Loader2, BookOpen } from "lucide-react";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
 import { Navbar } from "@/components/layout/navbar";
 import { useAuthContext } from "@/components/auth/auth-provider";
 import { RecipeForm } from "@/components/recipes/recipe-form";
 import { db } from "@/lib/db/db";
-import { id } from "@instantdb/react";
 import { LoginPage } from "@/components/auth/login-page";
+import {
+    getRecipeImageUrl,
+    getRecipeNutritionImageUrl,
+} from "@/lib/utils/recipe-image";
 
-export const Route = createFileRoute("/recipes/new")({
-    component: NewRecipePage,
+export const Route = createFileRoute("/_recipes/$recipeId/edit")({
+    component: EditRecipePage,
 });
 
 async function uploadAndLinkFile(
@@ -31,12 +35,16 @@ async function uploadAndLinkFile(
     await db.transact(db.tx.recipes[recipeId].link({ [linkKey]: data.id }));
 }
 
-function NewRecipePage() {
+function EditRecipePage() {
+    const { recipeId } = Route.useParams();
+    const { recipe, isLoading: recipeLoading, error: recipeError } = useRecipe(recipeId);
     const { canEdit, isLoading: authLoading } = useAuthContext();
     const navigate = useNavigate();
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    if (authLoading) {
+    const isLoading = authLoading || recipeLoading;
+
+    if (isLoading) {
         return (
             <div className="flex items-center justify-center h-screen">
                 <Loader2 className="w-4 h-4 ml-2 animate-spin" /> Loading...
@@ -46,6 +54,20 @@ function NewRecipePage() {
 
     if (!canEdit) {
         return <LoginPage />;
+    }
+
+    if (recipeError) {
+        return <div>Error: {recipeError.message}</div>;
+    }
+
+    if (!recipe) {
+        return (
+            <div className="flex items-center justify-center h-screen w-full">
+                <div className="text-center text-destructive">
+                    <p>Recipe not found.</p>
+                </div>
+            </div>
+        );
     }
 
     const handleSubmit = async (formData: {
@@ -67,11 +89,10 @@ function NewRecipePage() {
     }) => {
         setIsSubmitting(true);
         try {
-            const recipeId = id();
             const now = new Date();
 
             await db.transact(
-                db.tx.recipes[recipeId].create({
+                db.tx.recipes[recipeId].update({
                     name: formData.name,
                     description: formData.description,
                     diet: formData.diet,
@@ -85,7 +106,6 @@ function NewRecipePage() {
                     procedure: formData.procedure,
                     source: formData.source,
                     videoURL: formData.videoURL,
-                    created: now,
                     updated: now,
                 })
             );
@@ -108,13 +128,31 @@ function NewRecipePage() {
                 );
             }
 
-            navigate({ to: "/recipes" });
+            navigate({ to: "/" });
         } catch (error) {
-            console.error("Error creating recipe:", error);
-            alert("Failed to create recipe. Please try again.");
+            console.error("Error updating recipe:", error);
+            alert("Failed to update recipe. Please try again.");
         } finally {
             setIsSubmitting(false);
         }
+    };
+
+    const initialData = {
+        name: recipe.name,
+        imageURL: getRecipeImageUrl(recipe),
+        nutritionLabelImageURL: getRecipeNutritionImageUrl(recipe),
+        description: recipe.description,
+        diet: recipe.diet,
+        prepTime: recipe.prepTime,
+        cookTime: recipe.cookTime,
+        yield: recipe.yield,
+        servingSize: recipe.servingSize,
+        servingUnit: recipe.servingUnit,
+        ingredients: recipe.ingredients,
+        equipment: recipe.equipment,
+        procedure: recipe.procedure,
+        source: recipe.source,
+        videoURL: recipe.videoURL,
     };
 
     return (
@@ -124,8 +162,12 @@ function NewRecipePage() {
                 <Breadcrumb
                     items={[
                         { label: "Home", to: "/" },
-                        { label: "Recipes", to: "/recipes" },
-                        { label: "New Recipe" },
+                        { label: "Recipes", to: "/" },
+                        {
+                            label: recipe.name || "Recipe",
+                            to: `/${recipeId}`,
+                        },
+                        { label: "Edit" },
                     ]}
                     className="mb-6"
                 />
@@ -134,15 +176,16 @@ function NewRecipePage() {
                     <div className="mb-8">
                         <h1 className="text-3xl font-bold flex items-center">
                             <BookOpen className="w-8 h-8 mr-2 inline-block text-primary" />
-                            Create New Recipe
+                            Edit Recipe
                         </h1>
                     </div>
 
                     <div className="bg-card border rounded-lg p-6">
                         <RecipeForm
                             onSubmit={handleSubmit}
-                            onCancel={() => navigate({ to: "/recipes" })}
+                            onCancel={() => navigate({ to: "/" })}
                             isLoading={isSubmitting}
+                            initialData={initialData}
                         />
                     </div>
                 </div>

@@ -9,66 +9,36 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as RecipesRouteImport } from './routes/recipes'
-import { Route as PantryRouteImport } from './routes/pantry'
 import { Route as LoginRouteImport } from './routes/login'
-import { Route as GroceryListRouteImport } from './routes/grocery-list'
-import { Route as CalendarRouteImport } from './routes/calendar'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as RecipesNewRouteImport } from './routes/recipes/new'
-import { Route as MealPlansMealPlanIdRouteImport } from './routes/meal-plans.$mealPlanId'
-import { Route as RecipesRecipeIdIndexRouteImport } from './routes/recipes/$recipeId/index'
-import { Route as RecipesRecipeIdEditRouteImport } from './routes/recipes/$recipeId/edit'
+import { Route as RecipesRouteImport } from './routes/_recipes'
+import { Route as RecipesIndexRouteImport } from './routes/_recipes/index'
+import { Route as RecipesNewRouteImport } from './routes/_recipes/new'
+import { Route as RecipesRecipeIdIndexRouteImport } from './routes/_recipes/$recipeId/index'
 import { Route as PublicRecipesRecipeIdRouteImport } from './routes/public/recipes/$recipeId'
+import { Route as RecipesRecipeIdEditRouteImport } from './routes/_recipes/$recipeId/edit'
 
-const RecipesRoute = RecipesRouteImport.update({
-  id: '/recipes',
-  path: '/recipes',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PantryRoute = PantryRouteImport.update({
-  id: '/pantry',
-  path: '/pantry',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const GroceryListRoute = GroceryListRouteImport.update({
-  id: '/grocery-list',
-  path: '/grocery-list',
+const RecipesRoute = RecipesRouteImport.update({
+  id: '/_recipes',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CalendarRoute = CalendarRouteImport.update({
-  id: '/calendar',
-  path: '/calendar',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const IndexRoute = IndexRouteImport.update({
+const RecipesIndexRoute = RecipesIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => RecipesRoute,
 } as any)
 const RecipesNewRoute = RecipesNewRouteImport.update({
   id: '/new',
   path: '/new',
   getParentRoute: () => RecipesRoute,
 } as any)
-const MealPlansMealPlanIdRoute = MealPlansMealPlanIdRouteImport.update({
-  id: '/meal-plans/$mealPlanId',
-  path: '/meal-plans/$mealPlanId',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const RecipesRecipeIdIndexRoute = RecipesRecipeIdIndexRouteImport.update({
   id: '/$recipeId/',
   path: '/$recipeId/',
-  getParentRoute: () => RecipesRoute,
-} as any)
-const RecipesRecipeIdEditRoute = RecipesRecipeIdEditRouteImport.update({
-  id: '/$recipeId/edit',
-  path: '/$recipeId/edit',
   getParentRoute: () => RecipesRoute,
 } as any)
 const PublicRecipesRecipeIdRoute = PublicRecipesRecipeIdRouteImport.update({
@@ -76,116 +46,74 @@ const PublicRecipesRecipeIdRoute = PublicRecipesRecipeIdRouteImport.update({
   path: '/public/recipes/$recipeId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RecipesRecipeIdEditRoute = RecipesRecipeIdEditRouteImport.update({
+  id: '/$recipeId/edit',
+  path: '/$recipeId/edit',
+  getParentRoute: () => RecipesRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/calendar': typeof CalendarRoute
-  '/grocery-list': typeof GroceryListRoute
   '/login': typeof LoginRoute
-  '/pantry': typeof PantryRoute
-  '/recipes': typeof RecipesRouteWithChildren
-  '/meal-plans/$mealPlanId': typeof MealPlansMealPlanIdRoute
-  '/recipes/new': typeof RecipesNewRoute
+  '/new': typeof RecipesNewRoute
+  '/': typeof RecipesIndexRoute
+  '/$recipeId/edit': typeof RecipesRecipeIdEditRoute
   '/public/recipes/$recipeId': typeof PublicRecipesRecipeIdRoute
-  '/recipes/$recipeId/edit': typeof RecipesRecipeIdEditRoute
-  '/recipes/$recipeId': typeof RecipesRecipeIdIndexRoute
+  '/$recipeId': typeof RecipesRecipeIdIndexRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/calendar': typeof CalendarRoute
-  '/grocery-list': typeof GroceryListRoute
   '/login': typeof LoginRoute
-  '/pantry': typeof PantryRoute
-  '/recipes': typeof RecipesRouteWithChildren
-  '/meal-plans/$mealPlanId': typeof MealPlansMealPlanIdRoute
-  '/recipes/new': typeof RecipesNewRoute
+  '/new': typeof RecipesNewRoute
+  '/': typeof RecipesIndexRoute
+  '/$recipeId/edit': typeof RecipesRecipeIdEditRoute
   '/public/recipes/$recipeId': typeof PublicRecipesRecipeIdRoute
-  '/recipes/$recipeId/edit': typeof RecipesRecipeIdEditRoute
-  '/recipes/$recipeId': typeof RecipesRecipeIdIndexRoute
+  '/$recipeId': typeof RecipesRecipeIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
-  '/calendar': typeof CalendarRoute
-  '/grocery-list': typeof GroceryListRoute
+  '/_recipes': typeof RecipesRouteWithChildren
   '/login': typeof LoginRoute
-  '/pantry': typeof PantryRoute
-  '/recipes': typeof RecipesRouteWithChildren
-  '/meal-plans/$mealPlanId': typeof MealPlansMealPlanIdRoute
-  '/recipes/new': typeof RecipesNewRoute
+  '/_recipes/new': typeof RecipesNewRoute
+  '/_recipes/': typeof RecipesIndexRoute
+  '/_recipes/$recipeId/edit': typeof RecipesRecipeIdEditRoute
   '/public/recipes/$recipeId': typeof PublicRecipesRecipeIdRoute
-  '/recipes/$recipeId/edit': typeof RecipesRecipeIdEditRoute
-  '/recipes/$recipeId/': typeof RecipesRecipeIdIndexRoute
+  '/_recipes/$recipeId/': typeof RecipesRecipeIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    | '/'
-    | '/calendar'
-    | '/grocery-list'
     | '/login'
-    | '/pantry'
-    | '/recipes'
-    | '/meal-plans/$mealPlanId'
-    | '/recipes/new'
+    | '/new'
+    | '/'
+    | '/$recipeId/edit'
     | '/public/recipes/$recipeId'
-    | '/recipes/$recipeId/edit'
-    | '/recipes/$recipeId'
+    | '/$recipeId'
   fileRoutesByTo: FileRoutesByTo
   to:
-    | '/'
-    | '/calendar'
-    | '/grocery-list'
     | '/login'
-    | '/pantry'
-    | '/recipes'
-    | '/meal-plans/$mealPlanId'
-    | '/recipes/new'
+    | '/new'
+    | '/'
+    | '/$recipeId/edit'
     | '/public/recipes/$recipeId'
-    | '/recipes/$recipeId/edit'
-    | '/recipes/$recipeId'
+    | '/$recipeId'
   id:
     | '__root__'
-    | '/'
-    | '/calendar'
-    | '/grocery-list'
+    | '/_recipes'
     | '/login'
-    | '/pantry'
-    | '/recipes'
-    | '/meal-plans/$mealPlanId'
-    | '/recipes/new'
+    | '/_recipes/new'
+    | '/_recipes/'
+    | '/_recipes/$recipeId/edit'
     | '/public/recipes/$recipeId'
-    | '/recipes/$recipeId/edit'
-    | '/recipes/$recipeId/'
+    | '/_recipes/$recipeId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
-  CalendarRoute: typeof CalendarRoute
-  GroceryListRoute: typeof GroceryListRoute
-  LoginRoute: typeof LoginRoute
-  PantryRoute: typeof PantryRoute
   RecipesRoute: typeof RecipesRouteWithChildren
-  MealPlansMealPlanIdRoute: typeof MealPlansMealPlanIdRoute
+  LoginRoute: typeof LoginRoute
   PublicRecipesRecipeIdRoute: typeof PublicRecipesRecipeIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/recipes': {
-      id: '/recipes'
-      path: '/recipes'
-      fullPath: '/recipes'
-      preLoaderRoute: typeof RecipesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/pantry': {
-      id: '/pantry'
-      path: '/pantry'
-      fullPath: '/pantry'
-      preLoaderRoute: typeof PantryRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/login': {
       id: '/login'
       path: '/login'
@@ -193,53 +121,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/grocery-list': {
-      id: '/grocery-list'
-      path: '/grocery-list'
-      fullPath: '/grocery-list'
-      preLoaderRoute: typeof GroceryListRouteImport
+    '/_recipes': {
+      id: '/_recipes'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof RecipesRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/calendar': {
-      id: '/calendar'
-      path: '/calendar'
-      fullPath: '/calendar'
-      preLoaderRoute: typeof CalendarRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/': {
-      id: '/'
+    '/_recipes/': {
+      id: '/_recipes/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof RecipesIndexRouteImport
+      parentRoute: typeof RecipesRoute
     }
-    '/recipes/new': {
-      id: '/recipes/new'
+    '/_recipes/new': {
+      id: '/_recipes/new'
       path: '/new'
-      fullPath: '/recipes/new'
+      fullPath: '/new'
       preLoaderRoute: typeof RecipesNewRouteImport
       parentRoute: typeof RecipesRoute
     }
-    '/meal-plans/$mealPlanId': {
-      id: '/meal-plans/$mealPlanId'
-      path: '/meal-plans/$mealPlanId'
-      fullPath: '/meal-plans/$mealPlanId'
-      preLoaderRoute: typeof MealPlansMealPlanIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/recipes/$recipeId/': {
-      id: '/recipes/$recipeId/'
+    '/_recipes/$recipeId/': {
+      id: '/_recipes/$recipeId/'
       path: '/$recipeId'
-      fullPath: '/recipes/$recipeId'
+      fullPath: '/$recipeId'
       preLoaderRoute: typeof RecipesRecipeIdIndexRouteImport
-      parentRoute: typeof RecipesRoute
-    }
-    '/recipes/$recipeId/edit': {
-      id: '/recipes/$recipeId/edit'
-      path: '/$recipeId/edit'
-      fullPath: '/recipes/$recipeId/edit'
-      preLoaderRoute: typeof RecipesRecipeIdEditRouteImport
       parentRoute: typeof RecipesRoute
     }
     '/public/recipes/$recipeId': {
@@ -249,17 +156,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicRecipesRecipeIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_recipes/$recipeId/edit': {
+      id: '/_recipes/$recipeId/edit'
+      path: '/$recipeId/edit'
+      fullPath: '/$recipeId/edit'
+      preLoaderRoute: typeof RecipesRecipeIdEditRouteImport
+      parentRoute: typeof RecipesRoute
+    }
   }
 }
 
 interface RecipesRouteChildren {
   RecipesNewRoute: typeof RecipesNewRoute
+  RecipesIndexRoute: typeof RecipesIndexRoute
   RecipesRecipeIdEditRoute: typeof RecipesRecipeIdEditRoute
   RecipesRecipeIdIndexRoute: typeof RecipesRecipeIdIndexRoute
 }
 
 const RecipesRouteChildren: RecipesRouteChildren = {
   RecipesNewRoute: RecipesNewRoute,
+  RecipesIndexRoute: RecipesIndexRoute,
   RecipesRecipeIdEditRoute: RecipesRecipeIdEditRoute,
   RecipesRecipeIdIndexRoute: RecipesRecipeIdIndexRoute,
 }
@@ -268,13 +184,8 @@ const RecipesRouteWithChildren =
   RecipesRoute._addFileChildren(RecipesRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
-  CalendarRoute: CalendarRoute,
-  GroceryListRoute: GroceryListRoute,
-  LoginRoute: LoginRoute,
-  PantryRoute: PantryRoute,
   RecipesRoute: RecipesRouteWithChildren,
-  MealPlansMealPlanIdRoute: MealPlansMealPlanIdRoute,
+  LoginRoute: LoginRoute,
   PublicRecipesRecipeIdRoute: PublicRecipesRecipeIdRoute,
 }
 export const routeTree = rootRouteImport

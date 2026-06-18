@@ -2,7 +2,6 @@
 
 import React from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import useHomeById from "@/hooks/use-home-by-id";
 import useRecipe from "@/hooks/use-recipe";
 import {
     Loader2,
@@ -21,7 +20,11 @@ import {
 } from "lucide-react";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
 import { useAuthContext } from "@/components/auth/auth-provider";
-import { getUserRoleInHome } from "@/lib/utils";
+import { Navbar } from "@/components/layout/navbar";
+import {
+    getRecipeImageUrl,
+    getRecipeNutritionImageUrl,
+} from "@/lib/utils/recipe-image";
 import { ImageSkeleton } from "@/components/ui/image-skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -43,7 +46,7 @@ import {
     shareRecipe,
 } from "@/lib/utils/recipe-sharing";
 
-export const Route = createFileRoute("/home/$homeId/recipes/$recipeId/")({
+export const Route = createFileRoute("/recipes/$recipeId/")({
     component: RecipeDetailPage,
 });
 
@@ -77,24 +80,19 @@ function isOldFormat(data: any): data is ProcedureStep[] {
 }
 
 function RecipeDetailPage() {
-    const { homeId, recipeId } = Route.useParams();
-    const {
-        home,
-        isLoading: homeLoading,
-        error: homeError,
-    } = useHomeById(homeId!);
+    const { recipeId } = Route.useParams();
     const {
         recipe,
         isLoading: recipeLoading,
         error: recipeError,
     } = useRecipe(recipeId);
-    const { user } = useAuthContext();
+    const { canEdit } = useAuthContext();
     const navigate = useNavigate();
     const [isNutritionLabelOpen, setIsNutritionLabelOpen] = React.useState(false);
     const [linkCopied, setLinkCopied] = React.useState(false);
 
-    const isLoading = homeLoading || recipeLoading;
-    const error = homeError || recipeError;
+    const isLoading = recipeLoading;
+    const error = recipeError;
 
     // Parse recipe data
     const ingredients: Ingredient[] = recipe?.ingredients
@@ -296,27 +294,6 @@ function RecipeDetailPage() {
         return <div>Error: {error.message}</div>;
     }
 
-    if (!home) {
-        return (
-            <div className="flex items-center justify-center h-screen w-full">
-                <div className="text-center text-destructive">
-                    <p>
-                        Home with ID{" "}
-                        <span className="inline font-bold italic text-foreground">
-                            {homeId}
-                        </span>{" "}
-                        not found.
-                    </p>
-                    <br />
-                    <p>
-                        It either does not exist or you are not authorized to
-                        access it.
-                    </p>
-                </div>
-            </div>
-        );
-    }
-
     if (!recipe) {
         return (
             <div className="flex items-center justify-center h-screen w-full">
@@ -328,19 +305,13 @@ function RecipeDetailPage() {
                         </span>{" "}
                         not found.
                     </p>
-                    <br />
-                    <p>
-                        It either does not exist or you are not authorized to
-                        access it.
-                    </p>
                 </div>
             </div>
         );
     }
 
-    const homeName = (home as { name: string } | null)?.name || "Home";
-    const userRole = getUserRoleInHome(home, user?.id);
-    const canEditRecipe = userRole && userRole !== "viewer";
+    const imageUrl = getRecipeImageUrl(recipe);
+    const nutritionImageUrl = getRecipeNutritionImageUrl(recipe);
 
     // Share handlers
     const handleCopyLink = async () => {
@@ -372,16 +343,16 @@ function RecipeDetailPage() {
     };
 
     return (
-        <main className="container mx-auto px-4 py-8">
+        <div className="min-h-screen bg-background">
+            <Navbar />
+            <main className="container mx-auto px-4 py-8">
             <Breadcrumb
                 items={[
                     { label: "Home", to: "/" },
-                    { label: homeName, to: `/home/${homeId}` },
-                    { label: "Recipes", to: `/home/${homeId}/recipes` },
+                    { label: "Recipes", to: "/recipes" },
                     { label: recipe.name || "Recipe" },
                 ]}
                 className="mb-6"
-                role={userRole}
             />
 
             <div className="max-w-4xl mx-auto space-y-6">
@@ -395,14 +366,13 @@ function RecipeDetailPage() {
                             </h1>
                         </div>
                         <div className="flex items-center gap-2">
-                            {canEditRecipe && (
+                            {canEdit && (
                                 <Button
                                     variant="outline"
                                     onClick={() => {
                                         navigate({
-                                            to: "/home/$homeId/recipes/$recipeId/edit",
-                                            params: { homeId, recipeId },
-                                            search: {},
+                                            to: "/recipes/$recipeId/edit",
+                                            params: { recipeId },
                                         });
                                     }}
                                 >
@@ -435,10 +405,10 @@ function RecipeDetailPage() {
                     </div>
 
                     {/* Recipe Image */}
-                    {recipe.imageURL && (
+                    {imageUrl && (
                         <div className="w-full h-64 md:h-96 overflow-hidden rounded-lg">
                             <ImageSkeleton
-                                src={recipe.imageURL}
+                                src={imageUrl}
                                 alt={recipe.name}
                                 className="w-full h-full object-cover"
                                 aspectRatio="16/9"
@@ -562,7 +532,7 @@ function RecipeDetailPage() {
                 </div>
 
                 {/* Nutrition Label Image */}
-                {recipe.nutritionLabelImageURL && (
+                {nutritionImageUrl && (
                     <Collapsible
                         open={isNutritionLabelOpen}
                         onOpenChange={setIsNutritionLabelOpen}
@@ -588,7 +558,7 @@ function RecipeDetailPage() {
                                 <CardContent className="flex-1 flex items-center justify-center p-4 min-h-0">
                                     <div className="w-full h-full flex items-center justify-center overflow-hidden rounded-lg">
                                         <img
-                                            src={recipe.nutritionLabelImageURL}
+                                            src={nutritionImageUrl}
                                             alt={`${recipe.name} nutrition label`}
                                             className="max-w-full max-h-full w-auto h-auto object-contain"
                                         />
@@ -995,5 +965,6 @@ function RecipeDetailPage() {
                 <RecipeNotes recipeId={recipeId} />
             </div>
         </main>
+        </div>
     );
 }

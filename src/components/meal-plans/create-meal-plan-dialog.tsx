@@ -35,14 +35,12 @@ import {
 interface CreateMealPlanDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    homeId: string;
     onSuccess?: () => void;
 }
 
 export function CreateMealPlanDialog({
     open,
     onOpenChange,
-    homeId,
     onSuccess,
 }: CreateMealPlanDialogProps) {
     const [name, setName] = useState("");
@@ -60,15 +58,13 @@ export function CreateMealPlanDialog({
             const now = new Date();
 
             db.transact(
-                db.tx.mealPlans[mealPlanId]
-                    .create({
-                        name: name.trim(),
-                        duration,
-                        startDayOfWeek,
-                        created: now,
-                        updated: now,
-                    })
-                    .link({ home: homeId })
+                db.tx.mealPlans[mealPlanId].create({
+                    name: name.trim(),
+                    duration,
+                    startDayOfWeek,
+                    created: now,
+                    updated: now,
+                })
             );
 
             // Wait a moment for the transaction to complete

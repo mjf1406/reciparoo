@@ -6,7 +6,6 @@ import { UtensilsCrossed, Cookie, ImageIcon } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MealSlotActionMenu } from "./meal-slot-action-menu";
-import { useAuthContext } from "@/components/auth/auth-provider";
 import {
     formatTime12,
     getSetDays,
@@ -25,8 +24,6 @@ export function MealSlotCard({
     onClick,
     compact = false,
 }: MealSlotCardProps) {
-    const { user } = useAuthContext();
-
     const isMeal = mealSlot.type === "meal";
     const Icon = isMeal ? UtensilsCrossed : Cookie;
     const recipes = mealSlot.mealSlotRecipes || [];
@@ -82,10 +79,7 @@ export function MealSlotCard({
                                     {recipes.length !== 1 ? "s" : ""}
                                 </span>
                             )}
-                            <MealSlotActionMenu
-                                mealSlot={mealSlot}
-                                userId={user?.id}
-                            />
+                            <MealSlotActionMenu mealSlot={mealSlot} />
                         </div>
                     </div>
                     {recipePreviews.length > 0 && (
@@ -154,10 +148,7 @@ export function MealSlotCard({
                         className="flex-shrink-0"
                         onClick={(e) => e.stopPropagation()}
                     >
-                        <MealSlotActionMenu
-                            mealSlot={mealSlot}
-                            userId={user?.id}
-                        />
+                        <MealSlotActionMenu mealSlot={mealSlot} />
                     </div>
                 </div>
             </CardHeader>

@@ -1,49 +1,34 @@
 /** @format */
 
-import { useAuthContext } from "@/components/auth/auth-provider";
 import { db } from "@/lib/db/db";
 import type { InstaQLEntity } from "@instantdb/react";
 import type { AppSchema } from "@/instant.schema";
 
-type RecipeWithHome = InstaQLEntity<
+export type RecipeWithFiles = InstaQLEntity<
     AppSchema,
     "recipes",
     {
-        home: {
-            owner: {};
-            admins: {};
-            homeMembers: {};
-            viewers: {};
-        };
+        imageFile: {};
+        nutritionFile: {};
+        folder: {};
     }
 >;
 
 export default function useRecipe(recipeId: string | undefined) {
-    const { user, isLoading: authLoading } = useAuthContext();
-
-    // Only query when user and recipeId are available
-    const query = user?.id && recipeId
+    const query = recipeId
         ? {
               recipes: {
                   $: { where: { id: recipeId } },
-                  home: {
-                      owner: {},
-                      admins: {},
-                      homeMembers: {},
-                      viewers: {},
-                  },
+                  imageFile: {},
+                  nutritionFile: {},
+                  folder: {},
               },
           }
         : null;
 
-    const { data, isLoading: queryLoading, error } = db.useQuery(query);
+    const { data, isLoading, error } = db.useQuery(query);
 
-    const recipes =
-        query && data
-            ? (data as { recipes?: unknown[] }).recipes
-            : undefined;
-    const recipe = (recipes?.[0] ?? null) as RecipeWithHome | null;
-    const isLoading = authLoading || queryLoading;
+    const recipe = (data?.recipes?.[0] ?? null) as RecipeWithFiles | null;
 
     return {
         recipe,

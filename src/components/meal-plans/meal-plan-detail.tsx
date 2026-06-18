@@ -33,7 +33,6 @@ export function MealPlanDetail({ mealPlan }: MealPlanDetailProps) {
     );
 
     const mealSlots = (mealPlan.mealSlots || []) as MealSlotWithRelations[];
-    const homeId = mealPlan.home?.id;
 
     // Get duration label
     const durationLabel =
@@ -114,7 +113,7 @@ export function MealPlanDetail({ mealPlan }: MealPlanDetailProps) {
             />
 
             {/* Select Recipes Dialog */}
-            {selectedSlot && homeId && (
+            {selectedSlot && (
                 <SelectRecipesDialog
                     open={selectRecipesOpen}
                     onOpenChange={(open) => {
@@ -122,7 +121,6 @@ export function MealPlanDetail({ mealPlan }: MealPlanDetailProps) {
                         if (!open) setSelectedSlot(null);
                     }}
                     mealSlot={selectedSlot}
-                    homeId={homeId}
                     onSuccess={() => {
                         setSelectRecipesOpen(false);
                         setSelectedSlot(null);

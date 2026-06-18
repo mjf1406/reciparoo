@@ -9,7 +9,7 @@ import type { MealPlanWithRelations } from "@/hooks/use-meal-plans";
 
 interface MealPlansGridProps {
     mealPlans: MealPlanWithRelations[];
-    onCreateClick: () => void;
+    onCreateClick?: () => void;
 }
 
 export function MealPlansGrid({ mealPlans, onCreateClick }: MealPlansGridProps) {
@@ -26,10 +26,12 @@ export function MealPlansGrid({ mealPlans, onCreateClick }: MealPlansGridProps) 
                         meals and snacks.
                     </p>
                 </div>
-                <Button onClick={onCreateClick}>
-                    <Plus className="mr-2 h-4 w-4" />
-                    Create Meal Plan
-                </Button>
+                {onCreateClick && (
+                    <Button onClick={onCreateClick}>
+                        <Plus className="mr-2 h-4 w-4" />
+                        Create Meal Plan
+                    </Button>
+                )}
             </div>
         );
     }

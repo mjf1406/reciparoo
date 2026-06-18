@@ -25,16 +25,10 @@ import { db } from "@/lib/db/db";
 import type { InstaQLEntity } from "@instantdb/react";
 import type { AppSchema } from "@/instant.schema";
 
-type NoteWithRecipe = InstaQLEntity<
-    AppSchema,
-    "notes",
-    {
-        recipe: {};
-    }
->;
+type Note = InstaQLEntity<AppSchema, "notes">;
 
 interface NoteActionMenuProps {
-    note: NoteWithRecipe;
+    note: Note;
     onEdit: () => void;
 }
 

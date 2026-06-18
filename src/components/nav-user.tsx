@@ -3,14 +3,7 @@
 "use client";
 
 import { useNavigate } from "@tanstack/react-router";
-import {
-    BadgeCheck,
-    Bell,
-    ChevronsUpDown,
-    CreditCard,
-    LogOut,
-    Sparkles,
-} from "lucide-react";
+import { ChevronsUpDown, LogOut } from "lucide-react";
 
 import { db } from "@/lib/db/db";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -35,10 +28,8 @@ type User =
           id: string;
           imageURL: string | null;
           avatarURL: string | null;
-          isGuest: boolean;
           refresh_token: string | null;
           updated_at: Date | null | string;
-          type: string;
           firstName: string | null;
           lastName: string | null;
           plan: string;
@@ -79,7 +70,7 @@ export function NavUser({
 }
 
 function NavUserSignedIn({ user: userProp }: { user?: User }) {
-    const { user: contextUser } = useAuthContext();
+    const { user: contextUser, canEdit } = useAuthContext();
     const navigate = useNavigate();
     const user = userProp ?? contextUser;
     const displayName =
@@ -87,7 +78,6 @@ function NavUserSignedIn({ user: userProp }: { user?: User }) {
             ? `${user.firstName} ${user.lastName}`
             : user?.email || "User";
     const avatarUrl = user?.avatarURL || user?.imageURL || undefined;
-    // Normalize empty strings to undefined
     const normalizedAvatarUrl =
         avatarUrl && avatarUrl.trim() !== "" ? avatarUrl : undefined;
     const initials =
@@ -102,10 +92,6 @@ function NavUserSignedIn({ user: userProp }: { user?: User }) {
         } catch (err) {
             console.error("Error signing out:", err);
         }
-    };
-
-    const handleNavigate = (path: string) => {
-        navigate({ to: path });
     };
 
     return (
@@ -160,9 +146,9 @@ function NavUserSignedIn({ user: userProp }: { user?: User }) {
                                         {user.email}
                                     </span>
                                 )}
-                                {user?.isGuest && (
+                                {!canEdit && (
                                     <span className="truncate text-xs text-muted-foreground">
-                                        Guest Account
+                                        View only
                                     </span>
                                 )}
                             </div>
@@ -178,46 +164,7 @@ function NavUserSignedIn({ user: userProp }: { user?: User }) {
                         <ThemeSwitch />
                     </div>
                 </div>
-                {user && user.isGuest && (
-                    <>
-                        <DropdownMenuSeparator />
-                        <div className="px-2 py-2">
-                            <p className="mb-2 text-xs text-muted-foreground">
-                                Sign in to save your data permanently
-                            </p>
-                        </div>
-                        <DropdownMenuSeparator />
-                    </>
-                )}
-                {user && !user.isGuest && (
-                    <>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuGroup>
-                            <DropdownMenuItem>
-                                <Sparkles className="mr-2 h-4 w-4" />
-                                Upgrade to Pro
-                            </DropdownMenuItem>
-                        </DropdownMenuGroup>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuGroup>
-                            <DropdownMenuItem
-                                onClick={() => handleNavigate("/")}
-                            >
-                                <BadgeCheck className="mr-2 h-4 w-4" />
-                                Account
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                                <CreditCard className="mr-2 h-4 w-4" />
-                                Billing
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                                <Bell className="mr-2 h-4 w-4" />
-                                Notifications
-                            </DropdownMenuItem>
-                        </DropdownMenuGroup>
-                        <DropdownMenuSeparator />
-                    </>
-                )}
+                <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleSignOut}>
                     <LogOut className="mr-2 h-4 w-4" />
                     Log out
@@ -236,7 +183,7 @@ function NavUserSignedOut() {
             <Button
                 variant="outline"
                 size="sm"
-                onClick={() => navigate({ to: "/" })}
+                onClick={() => navigate({ to: "/login" })}
             >
                 Sign In
             </Button>

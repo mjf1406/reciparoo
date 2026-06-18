@@ -23,21 +23,19 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { useAuthContext } from "@/components/auth/auth-provider";
 import type { InstaQLEntity } from "@instantdb/react";
 import type { AppSchema } from "@/instant.schema";
 
 type Folder = InstaQLEntity<
     AppSchema,
     "folders",
-    { home: {}; parentFolder: {} }
+    { parentFolder: {} }
 >;
 
 interface MoveFolderDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     folder: Folder;
-    homeId: string;
     onSuccess?: () => void;
 }
 
@@ -45,28 +43,17 @@ export function MoveFolderDialog({
     open,
     onOpenChange,
     folder,
-    homeId,
     onSuccess,
 }: MoveFolderDialogProps) {
     const [selectedParentId, setSelectedParentId] = useState<string | null>(
         null
     );
     const [isLoading, setIsLoading] = useState(false);
-    const { user } = useAuthContext();
-
-    // Query all folders in the home
-    const { data: foldersData, isLoading: foldersLoading } = db.useQuery(
-        user?.id
-            ? {
-                  folders: {
-                      $: {
-                          where: { "home.id": homeId },
-                      },
-                      parentFolder: {},
-                  },
-              }
-            : null
-    );
+    const { data: foldersData, isLoading: foldersLoading } = db.useQuery({
+        folders: {
+            parentFolder: {},
+        },
+    });
     const folders = (foldersData?.folders || []) as Array<{
         id: string;
         name: string;

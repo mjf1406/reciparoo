@@ -14,33 +14,28 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { ImageSkeleton } from "@/components/ui/image-skeleton";
 import { RecipeActionMenu } from "./recipe-action-menu";
-import { useAuthContext } from "@/components/auth/auth-provider";
 import { useNavigate } from "@tanstack/react-router";
 import type { InstaQLEntity } from "@instantdb/react";
 import type { AppSchema } from "@/instant.schema";
+import { getRecipeImageUrl } from "@/lib/utils/recipe-image";
 
 type RecipeWithRelations = InstaQLEntity<
     AppSchema,
     "recipes",
     {
-        home: {
-            owner: {};
-            admins: {};
-            homeMembers: {};
-            viewers: {};
-        };
+        folder: {};
+        imageFile: {};
     }
 >;
 
 interface RecipeCardProps {
-    recipe: RecipeWithRelations | any; // Allow flexible type for Date objects
+    recipe: RecipeWithRelations | any;
 }
 
 export function RecipeCard({ recipe }: RecipeCardProps) {
-    const { user } = useAuthContext();
     const navigate = useNavigate();
+    const imageUrl = getRecipeImageUrl(recipe);
 
-    // Parse ingredients and equipment from JSON strings
     const ingredients = recipe.ingredients
         ? (JSON.parse(recipe.ingredients) as Array<{
               quantity: string;
@@ -52,12 +47,10 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
         ? (JSON.parse(recipe.equipment) as string[])
         : [];
 
-    // Parse diet types from comma-separated string
     const dietTypes = recipe.diet
         ? recipe.diet.split(",").map((d: string) => d.trim())
         : [];
 
-    // Format time display
     const formatTime = (minutes?: number) => {
         if (!minutes) return null;
         if (minutes < 60) return `${minutes} min`;
@@ -70,12 +63,10 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
     const cookTime = formatTime(recipe.cookTime);
 
     const handleCardClick = () => {
-        const home = recipe.home;
-        if (home?.id && recipe.id) {
+        if (recipe.id) {
             navigate({
-                to: "/home/$homeId/recipes/$recipeId",
-                params: { homeId: home.id, recipeId: recipe.id },
-                search: {},
+                to: "/recipes/$recipeId",
+                params: { recipeId: recipe.id },
             });
         }
     };
@@ -85,22 +76,17 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
             className="transition-all hover:shadow-lg hover:scale-[1.02] flex flex-col relative cursor-pointer"
             onClick={handleCardClick}
         >
-            {/* Recipe Action Menu */}
             <div
                 className="absolute top-4 right-4 z-10"
                 onClick={(e) => e.stopPropagation()}
             >
-                <RecipeActionMenu
-                    recipe={recipe}
-                    userId={user?.id}
-                />
+                <RecipeActionMenu recipe={recipe} />
             </div>
 
-            {/* Recipe Image */}
-            {recipe.imageURL && (
+            {imageUrl && (
                 <div className="w-full h-48 overflow-hidden rounded-t-xl">
                     <ImageSkeleton
-                        src={recipe.imageURL}
+                        src={imageUrl}
                         alt={recipe.name}
                         className="w-full h-full object-cover"
                         aspectRatio="16/9"
@@ -120,7 +106,6 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
             </CardHeader>
 
             <CardContent className="flex-1 space-y-3">
-                {/* Diet Badges */}
                 {dietTypes.length > 0 && (
                     <div className="flex flex-wrap gap-2">
                         {dietTypes.map((diet: string, index: number) => (
@@ -135,7 +120,6 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
                     </div>
                 )}
 
-                {/* Time Information */}
                 {(prepTime || cookTime) && (
                     <div className="flex items-center gap-4 text-sm text-muted-foreground">
                         {prepTime && (
@@ -153,7 +137,6 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
                     </div>
                 )}
 
-                {/* Ingredients and Equipment Count */}
                 <div className="flex items-center gap-4 text-sm text-muted-foreground">
                     {ingredients.length > 0 && (
                         <div className="flex items-center gap-1">
@@ -172,7 +155,6 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
                     )}
                 </div>
 
-                {/* Source Link */}
                 {recipe.source && (
                     <a
                         href={recipe.source}

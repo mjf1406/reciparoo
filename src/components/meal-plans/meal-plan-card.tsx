@@ -12,7 +12,6 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MealPlanActionMenu } from "./meal-plan-action-menu";
-import { useAuthContext } from "@/components/auth/auth-provider";
 import { useNavigate } from "@tanstack/react-router";
 import {
     getDayName,
@@ -27,10 +26,8 @@ interface MealPlanCardProps {
 }
 
 export function MealPlanCard({ mealPlan }: MealPlanCardProps) {
-    const { user } = useAuthContext();
     const navigate = useNavigate();
 
-    const home = mealPlan.home;
     const mealSlots = mealPlan.mealSlots || [];
 
     // Count meals and snacks
@@ -51,10 +48,10 @@ export function MealPlanCard({ mealPlan }: MealPlanCardProps) {
     const startDayName = getDayName(mealPlan.startDayOfWeek as DayOfWeek);
 
     const handleCardClick = () => {
-        if (home?.id && mealPlan.id) {
+        if (mealPlan.id) {
             navigate({
-                to: "/home/$homeId/meal-plans/$mealPlanId",
-                params: { homeId: home.id, mealPlanId: mealPlan.id },
+                to: "/meal-plans/$mealPlanId",
+                params: { mealPlanId: mealPlan.id },
             });
         }
     };
@@ -69,10 +66,7 @@ export function MealPlanCard({ mealPlan }: MealPlanCardProps) {
                 className="absolute top-4 right-4 z-10"
                 onClick={(e) => e.stopPropagation()}
             >
-                <MealPlanActionMenu
-                    mealPlan={mealPlan}
-                    userId={user?.id}
-                />
+                <MealPlanActionMenu mealPlan={mealPlan} />
             </div>
 
             <CardHeader>

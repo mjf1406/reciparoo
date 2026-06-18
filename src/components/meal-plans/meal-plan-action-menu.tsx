@@ -22,35 +22,25 @@ import {
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { db } from "@/lib/db/db";
-import { getUserRoleInHome } from "@/lib/utils";
+import { useAuthContext } from "@/components/auth/auth-provider";
 import { EditMealPlanDialog } from "./edit-meal-plan-dialog";
 import type { MealPlanWithRelations } from "@/hooks/use-meal-plans";
 
 interface MealPlanActionMenuProps {
     mealPlan: MealPlanWithRelations;
-    userId: string | null | undefined;
     onEdit?: () => void;
 }
 
 export function MealPlanActionMenu({
     mealPlan,
-    userId,
     onEdit,
 }: MealPlanActionMenuProps) {
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [editDialogOpen, setEditDialogOpen] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
+    const { canEdit } = useAuthContext();
 
-    // Get home from mealPlan relation
-    const home = mealPlan.home;
-
-    // Check permissions - only show menu for owner/admin/member
-    const userRole = getUserRoleInHome(home ?? null, userId);
-    const canEditMealPlan = userRole && userRole !== "viewer";
-    const canDeleteMealPlan = userRole === "owner" || userRole === "admin";
-
-    // Don't render menu if user doesn't have permission
-    if (!canEditMealPlan) {
+    if (!canEdit) {
         return null;
     }
 
@@ -60,10 +50,7 @@ export function MealPlanActionMenu({
         setIsDeleting(true);
         try {
             db.transact(db.tx.mealPlans[mealPlan.id].delete());
-
-            // Wait a moment for the transaction to complete
             await new Promise((resolve) => setTimeout(resolve, 100));
-
             setDeleteDialogOpen(false);
         } catch (error) {
             console.error("Error deleting meal plan:", error);
@@ -102,18 +89,16 @@ export function MealPlanActionMenu({
                         <Pencil className="mr-2 h-4 w-4" />
                         Edit
                     </DropdownMenuItem>
-                    {canDeleteMealPlan && (
-                        <DropdownMenuItem
-                            variant="destructive"
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                setDeleteDialogOpen(true);
-                            }}
-                        >
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Delete
-                        </DropdownMenuItem>
-                    )}
+                    <DropdownMenuItem
+                        variant="destructive"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setDeleteDialogOpen(true);
+                        }}
+                    >
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Delete
+                    </DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
 

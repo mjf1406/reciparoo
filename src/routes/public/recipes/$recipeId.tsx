@@ -38,6 +38,10 @@ import {
     copyRecipeLink,
     shareRecipe,
 } from "@/lib/utils/recipe-sharing";
+import {
+    getRecipeImageUrl,
+    getRecipeNutritionImageUrl,
+} from "@/lib/utils/recipe-image";
 import { PublicNavbar } from "@/components/layout/public-navbar";
 
 export const Route = createFileRoute("/public/recipes/$recipeId")({
@@ -343,6 +347,9 @@ function PublicRecipeDetailPage() {
         }
     };
 
+    const imageUrl = recipe ? getRecipeImageUrl(recipe) : undefined;
+    const nutritionImageUrl = recipe ? getRecipeNutritionImageUrl(recipe) : undefined;
+
     if (recipeLoading) {
         return (
             <div className="flex items-center justify-center h-screen">
@@ -422,10 +429,10 @@ function PublicRecipeDetailPage() {
                         </div>
 
                         {/* Recipe Image */}
-                        {recipe.imageURL && (
+                        {imageUrl && (
                             <div className="w-full h-64 md:h-96 overflow-hidden rounded-lg">
                                 <ImageSkeleton
-                                    src={recipe.imageURL}
+                                    src={imageUrl}
                                     alt={recipe.name}
                                     className="w-full h-full object-cover"
                                     aspectRatio="16/9"
@@ -550,7 +557,7 @@ function PublicRecipeDetailPage() {
                     </div>
 
                     {/* Nutrition Label Image */}
-                    {recipe.nutritionLabelImageURL && (
+                    {nutritionImageUrl && (
                         <Collapsible
                             open={isNutritionLabelOpen}
                             onOpenChange={setIsNutritionLabelOpen}
@@ -576,9 +583,7 @@ function PublicRecipeDetailPage() {
                                     <CardContent className="flex-1 flex items-center justify-center p-4 min-h-0">
                                         <div className="w-full h-full flex items-center justify-center overflow-hidden rounded-lg">
                                             <img
-                                                src={
-                                                    recipe.nutritionLabelImageURL
-                                                }
+                                                src={nutritionImageUrl}
                                                 alt={`${recipe.name} nutrition label`}
                                                 className="max-w-full max-h-full w-auto h-auto object-contain"
                                             />

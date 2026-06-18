@@ -21,16 +21,11 @@ import { Badge } from "@/components/ui/badge";
 import { RecipeGridItem } from "./recipe-grid-item";
 import { formatTime12 } from "@/lib/utils/meal-plan";
 import type { MealSlotWithRelations } from "@/hooks/use-meal-slots";
-import type { InstaQLEntity } from "@instantdb/react";
-import type { AppSchema } from "@/instant.schema";
-
-type RecipeBasic = InstaQLEntity<AppSchema, "recipes">;
 
 interface SelectRecipesDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     mealSlot: MealSlotWithRelations;
-    homeId: string;
     onSuccess?: () => void;
 }
 
@@ -38,7 +33,6 @@ export function SelectRecipesDialog({
     open,
     onOpenChange,
     mealSlot,
-    homeId,
     onSuccess,
 }: SelectRecipesDialogProps) {
     const [searchQuery, setSearchQuery] = useState("");
@@ -51,18 +45,18 @@ export function SelectRecipesDialog({
     );
     const [isLoading, setIsLoading] = useState(false);
 
-    // Query all recipes for this home
     const { data: recipesData } = db.useQuery({
         recipes: {
-            $: {
-                where: {
-                    "home.id": homeId,
-                },
-            },
+            imageFile: {},
         },
     });
 
-    const recipes = (recipesData?.recipes || []) as unknown as RecipeBasic[];
+    const recipes = (recipesData?.recipes || []) as Array<{
+        id: string;
+        name: string;
+        imageURL?: string;
+        imageFile?: { url?: string };
+    }>;
 
     // Filter recipes by search query
     const filteredRecipes = useMemo(() => {
@@ -213,7 +207,7 @@ export function SelectRecipesDialog({
                             {filteredRecipes.length === 0 ? (
                                 <div className="text-center py-8 text-muted-foreground">
                                     {recipes.length === 0
-                                        ? "No recipes in this home yet. Create some recipes first!"
+                                        ? "No recipes yet. Create some recipes first!"
                                         : "No recipes match your search."}
                                 </div>
                             ) : (

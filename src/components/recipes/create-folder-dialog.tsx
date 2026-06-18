@@ -23,7 +23,6 @@ import { Textarea } from "@/components/ui/textarea";
 interface CreateFolderDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    homeId: string;
     parentFolderId?: string | null;
     onSuccess?: () => void;
 }
@@ -31,7 +30,6 @@ interface CreateFolderDialogProps {
 export function CreateFolderDialog({
     open,
     onOpenChange,
-    homeId,
     parentFolderId,
     onSuccess,
 }: CreateFolderDialogProps) {
@@ -49,16 +47,13 @@ export function CreateFolderDialog({
             const now = new Date();
 
             // Build transaction - chain methods as they return new transaction objects
-            let tx = db.tx.folders[folderId]
-                .create({
-                    name: name.trim(),
-                    description: description.trim() || undefined,
-                    created: now,
-                    updated: now,
-                })
-                .link({ home: homeId });
+            let tx = db.tx.folders[folderId].create({
+                name: name.trim(),
+                description: description.trim() || undefined,
+                created: now,
+                updated: now,
+            });
 
-            // Link to parent folder if provided
             if (parentFolderId) {
                 tx = tx.link({ parentFolder: parentFolderId });
             }

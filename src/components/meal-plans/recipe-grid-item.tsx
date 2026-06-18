@@ -4,13 +4,15 @@
 
 import { Check, ImageIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { InstaQLEntity } from "@instantdb/react";
-import type { AppSchema } from "@/instant.schema";
-
-type RecipeBasic = InstaQLEntity<AppSchema, "recipes">;
+import { getRecipeImageUrl } from "@/lib/utils/recipe-image";
 
 interface RecipeGridItemProps {
-    recipe: RecipeBasic;
+    recipe: {
+        id: string;
+        name: string;
+        imageURL?: string | null;
+        imageFile?: { url?: string | null } | null;
+    };
     selected: boolean;
     onToggle: () => void;
 }
@@ -20,6 +22,8 @@ export function RecipeGridItem({
     selected,
     onToggle,
 }: RecipeGridItemProps) {
+    const imageUrl = getRecipeImageUrl(recipe);
+
     return (
         <div
             className={cn(
@@ -30,18 +34,16 @@ export function RecipeGridItem({
             )}
             onClick={onToggle}
         >
-            {/* Selection Indicator */}
             {selected && (
                 <div className="absolute top-2 right-2 z-10 bg-primary rounded-full p-1">
                     <Check className="h-3 w-3 text-primary-foreground" />
                 </div>
             )}
 
-            {/* Image */}
             <div className="aspect-square bg-muted relative overflow-hidden">
-                {recipe.imageURL ? (
+                {imageUrl ? (
                     <img
-                        src={recipe.imageURL}
+                        src={imageUrl}
                         alt={recipe.name}
                         className="w-full h-full object-cover"
                     />
@@ -52,7 +54,6 @@ export function RecipeGridItem({
                 )}
             </div>
 
-            {/* Name */}
             <div className="p-2">
                 <p
                     className="text-sm font-medium line-clamp-2"

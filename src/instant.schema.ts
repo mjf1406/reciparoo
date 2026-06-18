@@ -13,11 +13,9 @@ const _schema = i.schema({
             updated: i.date().indexed().optional(),
         }),
         $users: i.entity({
-            // System Columns
             email: i.string().unique().indexed().optional(),
             imageURL: i.string().optional(),
             type: i.string().optional(),
-            // Custom Columns
             avatarURL: i.string().optional(),
             plan: i.string().optional(),
             firstName: i.string().optional(),
@@ -25,22 +23,6 @@ const _schema = i.schema({
             created: i.date().optional(),
             updated: i.date().optional(),
             lastLogon: i.date().optional(),
-        }),
-        homes: i.entity({
-            name: i.string().indexed(),
-            description: i.string().optional(),
-            created: i.date().indexed(),
-            updated: i.date().indexed(),
-        }),
-        joinCodes: i.entity({
-            code: i.string().unique().indexed(),
-            created: i.date().indexed(),
-            updated: i.date().indexed(),
-        }),
-        joinCodeRequests: i.entity({
-            email: i.string().unique().indexed(),
-            created: i.date().indexed(),
-            updated: i.date().indexed(),
         }),
         recipes: i.entity({
             name: i.string().indexed(),
@@ -74,298 +56,144 @@ const _schema = i.schema({
         }),
         mealPlans: i.entity({
             name: i.string().indexed(),
-            duration: i.number().indexed(), // 1, 2, or 4 weeks
-            startDayOfWeek: i.number().indexed(), // 0-6, where 0=Sunday
+            duration: i.number().indexed(),
+            startDayOfWeek: i.number().indexed(),
             created: i.date().indexed(),
             updated: i.date().indexed(),
         }),
         mealSlots: i.entity({
-            name: i.string().indexed(), // e.g., "breakfast", "lunch", "brunch"
-            type: i.string().indexed(), // "meal" or "snack"
-            time: i.string().indexed(), // 24-hour format, e.g., "07:00"
-            dayBitmask: i.number().indexed(), // 7-bit mask, one bit per day
+            name: i.string().indexed(),
+            type: i.string().indexed(),
+            time: i.string().indexed(),
+            dayBitmask: i.number().indexed(),
             created: i.date().indexed(),
             updated: i.date().indexed(),
         }),
         mealSlotRecipes: i.entity({
-            order: i.number().optional(), // for ordering recipes within a slot
+            order: i.number().optional(),
             created: i.date().indexed(),
         }),
     },
     links: {
-        // ------------------------
-        //        User Links
-        // ------------------------
         userFiles: {
             forward: {
                 on: "$files",
                 has: "one",
                 label: "owner",
                 onDelete: "cascade",
-            }, // Each file has one owner, which is a user id
+            },
             reverse: {
                 on: "$users",
                 has: "many",
                 label: "files",
-            }, // Each user can have many files
-        },
-        userHomes: {
-            forward: {
-                on: "homes",
-                has: "one",
-                label: "owner",
-                onDelete: "cascade",
-            }, // Each home has one owner who created it, which is a user id
-            reverse: {
-                on: "$users",
-                has: "many",
-                label: "homes",
-            }, // Each user can have many homes
-        },
-        // ------------------------
-        //       Home Links
-        // ------------------------
-        homeAdmins: {
-            forward: {
-                on: "homes",
-                has: "many",
-                label: "admins",
-            }, // Each home can have many admin users
-            reverse: {
-                on: "$users",
-                has: "many",
-                label: "adminHomes",
-            }, // Each user can be an admin of many homes
-        },
-        homeMembers: {
-            forward: {
-                on: "homes",
-                has: "many",
-                label: "homeMembers",
-            }, // Each home can have many member users
-            reverse: {
-                on: "$users",
-                has: "many",
-                label: "memberHomes",
-            }, // Each user can be a member of many homes
-        },
-        homeViewers: {
-            forward: {
-                on: "homes",
-                has: "many",
-                label: "viewers",
-            }, // Each home can have many viewer users
-            reverse: {
-                on: "$users",
-                has: "many",
-                label: "viewerHomes",
-            }, // Each user can be a viewer of many homes
-        },
-        // ------------------------
-        //   Home Join Code Links
-        // ------------------------
-        homeJoinCode: {
-            forward: {
-                on: "joinCodes", // Each join code
-                has: "one", // has one
-                label: "home", // home
-                onDelete: "cascade",
-            },
-            reverse: {
-                on: "homes", // Each home
-                has: "many", // has many
-                label: "joinCodes", // join codes
-            },
-        },
-        joinCodeRequests: {
-            forward: {
-                on: "joinCodeRequests", // Each join code request
-                has: "one", // has one
-                label: "joinCode", // join code
-                onDelete: "cascade",
-            },
-            reverse: {
-                on: "joinCodes", // Each join code
-                has: "many", // has many
-                label: "joinCodeRequests", // join code requests
-            },
-        },
-        joinCodeRequestUsers: {
-            forward: {
-                on: "joinCodeRequests", // Each join code request
-                has: "one", // has one
-                label: "user", // user
-                onDelete: "cascade",
-            },
-            reverse: {
-                on: "$users", // Each user
-                has: "one", // has one
-                label: "joinCodeRequest", // join code request
-            },
-        },
-        joinCodeDenied: {
-            forward: {
-                on: "joinCodes", // Each join code
-                has: "many", // has many
-                label: "denied", // denied users
-            },
-            reverse: {
-                on: "$users", // Each user
-                has: "many", // has many
-                label: "deniedJoinCodes", // denied join codes
-            },
-        },
-        // ------------------------
-        //      Recipe Links
-        // ------------------------
-        homeRecipes: {
-            forward: {
-                on: "recipes", // Each recipe
-                has: "one", // has one
-                label: "home", // home
-                onDelete: "cascade",
-            },
-            reverse: {
-                on: "homes", // Each home
-                has: "many", // has many
-                label: "recipes", // recipes
             },
         },
         recipeNotes: {
             forward: {
-                on: "notes", // Each note
-                has: "one", // has one
-                label: "recipe", // recipe
+                on: "notes",
+                has: "one",
+                label: "recipe",
                 onDelete: "cascade",
             },
             reverse: {
-                on: "recipes", // Each recipe
-                has: "many", // has many
-                label: "notes", // notes
+                on: "recipes",
+                has: "many",
+                label: "notes",
             },
         },
         recipeFolder: {
             forward: {
-                on: "recipes", // Each recipe
-                has: "one", // has one
-                label: "folder", // folder
+                on: "recipes",
+                has: "one",
+                label: "folder",
                 onDelete: "cascade",
             },
             reverse: {
-                on: "folders", // Each folder
-                has: "many", // has many
-                label: "recipes", // recipes
+                on: "folders",
+                has: "many",
+                label: "recipes",
             },
         },
-        // ------------------------
-        //      Folder Links
-        // ------------------------
-        homeFolders: {
+        recipeImageFile: {
             forward: {
-                on: "folders", // Each folder
-                has: "one", // has one
-                label: "home", // home
-                onDelete: "cascade",
+                on: "recipes",
+                has: "one",
+                label: "imageFile",
             },
             reverse: {
-                on: "homes", // Each home
-                has: "many", // has many
-                label: "folders", // folders
+                on: "$files",
+                has: "one",
+                label: "imageForRecipe",
+            },
+        },
+        recipeNutritionFile: {
+            forward: {
+                on: "recipes",
+                has: "one",
+                label: "nutritionFile",
+            },
+            reverse: {
+                on: "$files",
+                has: "one",
+                label: "nutritionForRecipe",
             },
         },
         folderParent: {
             forward: {
-                on: "folders", // Each folder
-                has: "one", // has one
-                label: "parentFolder", // parentFolder
+                on: "folders",
+                has: "one",
+                label: "parentFolder",
                 onDelete: "cascade",
             },
             reverse: {
-                on: "folders", // Each folder
-                has: "many", // has many
-                label: "subfolders", // subfolders
-            },
-        },
-        // ------------------------
-        //      File Links
-        // ------------------------
-        homeFiles: {
-            forward: {
-                on: "$files", // Each file
-                has: "one", // has one
-                label: "home", // home
-                onDelete: "cascade",
-            },
-            reverse: {
-                on: "homes", // Each home
-                has: "many", // has many
-                label: "files", // files
-            },
-        },
-        // ------------------------
-        //    Meal Plan Links
-        // ------------------------
-        homeMealPlans: {
-            forward: {
-                on: "mealPlans", // Each meal plan
-                has: "one", // has one
-                label: "home", // home
-                onDelete: "cascade",
-            },
-            reverse: {
-                on: "homes", // Each home
-                has: "many", // has many
-                label: "mealPlans", // meal plans
+                on: "folders",
+                has: "many",
+                label: "subfolders",
             },
         },
         mealPlanSlots: {
             forward: {
-                on: "mealSlots", // Each meal slot
-                has: "one", // has one
-                label: "mealPlan", // meal plan
+                on: "mealSlots",
+                has: "one",
+                label: "mealPlan",
                 onDelete: "cascade",
             },
             reverse: {
-                on: "mealPlans", // Each meal plan
-                has: "many", // has many
-                label: "mealSlots", // meal slots
+                on: "mealPlans",
+                has: "many",
+                label: "mealSlots",
             },
         },
         mealSlotRecipeSlot: {
             forward: {
-                on: "mealSlotRecipes", // Each meal slot recipe
-                has: "one", // has one
-                label: "mealSlot", // meal slot
+                on: "mealSlotRecipes",
+                has: "one",
+                label: "mealSlot",
                 onDelete: "cascade",
             },
             reverse: {
-                on: "mealSlots", // Each meal slot
-                has: "many", // has many
-                label: "mealSlotRecipes", // meal slot recipes
+                on: "mealSlots",
+                has: "many",
+                label: "mealSlotRecipes",
             },
         },
         mealSlotRecipeRecipe: {
             forward: {
-                on: "mealSlotRecipes", // Each meal slot recipe
-                has: "one", // has one
-                label: "recipe", // recipe
+                on: "mealSlotRecipes",
+                has: "one",
+                label: "recipe",
                 onDelete: "cascade",
             },
             reverse: {
-                on: "recipes", // Each recipe
-                has: "many", // has many
-                label: "mealSlotRecipes", // meal slot recipes
+                on: "recipes",
+                has: "many",
+                label: "mealSlotRecipes",
             },
         },
     },
-    rooms: {
-        homes: {
-            presence: i.entity({}),
-        },
-    },
+    rooms: {},
 });
 
-// This helps Typescript display nicer intellisense
 type _AppSchema = typeof _schema;
 interface AppSchema extends _AppSchema {}
 const schema: AppSchema = _schema;

@@ -11,54 +11,45 @@ import {
     CardTitle,
 } from "@/components/ui/card";
 import { FolderActionMenu } from "./folder-action-menu";
-import { useAuthContext } from "@/components/auth/auth-provider";
 import { useNavigate } from "@tanstack/react-router";
 import type { InstaQLEntity } from "@instantdb/react";
 import type { AppSchema } from "@/instant.schema";
+import { getRecipeImageUrl } from "@/lib/utils/recipe-image";
 
 type FolderWithRelations = InstaQLEntity<
     AppSchema,
     "folders",
     {
-        home: {
-            owner: {};
-            admins: {};
-            homeMembers: {};
-            viewers: {};
-        };
         parentFolder: {};
         subfolders: {};
-        recipes: {};
+        recipes: {
+            imageFile: {};
+        };
     }
 >;
 
 interface FolderCardProps {
-    folder: FolderWithRelations | any; // Allow flexible type for Date objects
+    folder: FolderWithRelations | any;
 }
 
 export function FolderCard({ folder }: FolderCardProps) {
-    const { user } = useAuthContext();
     const navigate = useNavigate();
 
     const recipes = folder.recipes || [];
     const recipeCount = recipes.length;
     const subfolderCount = folder.subfolders?.length || 0;
 
-    // Get first 9 recipes with images for the grid
     const recipesWithImages = recipes
-        .filter((r: any) => r.imageURL)
+        .filter((r: any) => getRecipeImageUrl(r))
         .slice(0, 9);
 
-    // Fill remaining slots with placeholders if we have fewer than 9 images
     const gridSlots = 9;
     const emptySlots = Math.max(0, gridSlots - recipesWithImages.length);
 
     const handleCardClick = () => {
-        const home = folder.home;
-        if (home?.id && folder.id) {
+        if (folder.id) {
             navigate({
-                to: "/home/$homeId/recipes",
-                params: { homeId: home.id },
+                to: "/recipes",
                 search: { folder: folder.id },
             });
         }
@@ -69,12 +60,11 @@ export function FolderCard({ folder }: FolderCardProps) {
             className="transition-all hover:shadow-lg hover:scale-[1.02] flex flex-col relative cursor-pointer overflow-hidden"
             onClick={handleCardClick}
         >
-            {/* Folder Action Menu */}
             <div
                 className="absolute top-4 right-4 z-10"
                 onClick={(e) => e.stopPropagation()}
             >
-                <FolderActionMenu folder={folder} userId={user?.id} />
+                <FolderActionMenu folder={folder} />
             </div>
 
             <CardHeader className="pb-2">
@@ -108,7 +98,6 @@ export function FolderCard({ folder }: FolderCardProps) {
                 </div>
             </CardHeader>
 
-            {/* Recipe Image Grid - 3x3 square images with names */}
             <CardContent className="pt-0 pb-4">
                 <div className="w-full bg-muted/30 rounded-lg overflow-hidden">
                     {recipesWithImages.length > 0 ? (
@@ -120,7 +109,7 @@ export function FolderCard({ folder }: FolderCardProps) {
                                 >
                                     <div className="aspect-square relative overflow-hidden bg-muted rounded">
                                         <img
-                                            src={recipe.imageURL}
+                                            src={getRecipeImageUrl(recipe)}
                                             alt={recipe.name || "Recipe"}
                                             className="absolute inset-0 w-full h-full object-cover"
                                         />
@@ -133,7 +122,6 @@ export function FolderCard({ folder }: FolderCardProps) {
                                     </span>
                                 </div>
                             ))}
-                            {/* Empty placeholder slots */}
                             {Array.from({ length: emptySlots }).map((_, index) => (
                                 <div
                                     key={`empty-${index}`}

@@ -25,52 +25,38 @@ import { db } from "@/lib/db/db";
 import { useNavigate } from "@tanstack/react-router";
 import type { InstaQLEntity } from "@instantdb/react";
 import type { AppSchema } from "@/instant.schema";
-import { getUserRoleInHome } from "@/lib/utils";
+import { useAuthContext } from "@/components/auth/auth-provider";
 import { MoveRecipeToFolderDialog } from "./move-recipe-to-folder-dialog";
 
-type RecipeWithHome = InstaQLEntity<
+type RecipeWithRelations = InstaQLEntity<
     AppSchema,
     "recipes",
     {
-        home: {
-            owner: {};
-            admins: {};
-            homeMembers: {};
-            viewers: {};
-        };
         folder: {};
+        imageFile: {};
     }
 >;
 
 interface RecipeActionMenuProps {
-    recipe: RecipeWithHome;
-    userId: string | null | undefined;
+    recipe: RecipeWithRelations;
 }
 
-export function RecipeActionMenu({ recipe, userId }: RecipeActionMenuProps) {
+export function RecipeActionMenu({ recipe }: RecipeActionMenuProps) {
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [moveDialogOpen, setMoveDialogOpen] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
     const navigate = useNavigate();
+    const { canEdit } = useAuthContext();
 
-    // Get home from recipe relation
-    const home = recipe.home;
-
-    // Check permissions - only show menu for owner/admin/member
-    const userRole = getUserRoleInHome(home ?? null, userId);
-    const canEditRecipe = userRole && userRole !== "viewer";
-
-    // Don't render menu if user doesn't have permission
-    if (!canEditRecipe) {
+    if (!canEdit) {
         return null;
     }
 
     const handleEdit = () => {
-        if (!home?.id || !recipe?.id) return;
+        if (!recipe?.id) return;
         navigate({
-            to: "/home/$homeId/recipes/$recipeId/edit",
-            params: { homeId: home.id, recipeId: recipe.id },
-            search: {},
+            to: "/recipes/$recipeId/edit",
+            params: { recipeId: recipe.id },
         });
     };
 
@@ -80,10 +66,7 @@ export function RecipeActionMenu({ recipe, userId }: RecipeActionMenuProps) {
         setIsDeleting(true);
         try {
             db.transact(db.tx.recipes[recipe.id].delete());
-
-            // Wait a moment for the transaction to complete
             await new Promise((resolve) => setTimeout(resolve, 100));
-
             setDeleteDialogOpen(false);
         } catch (error) {
             console.error("Error deleting recipe:", error);
@@ -172,17 +155,14 @@ export function RecipeActionMenu({ recipe, userId }: RecipeActionMenuProps) {
                 </AlertDialogContent>
             </AlertDialog>
 
-            {home?.id && (
-                <MoveRecipeToFolderDialog
-                    open={moveDialogOpen}
-                    onOpenChange={setMoveDialogOpen}
-                    recipe={recipe}
-                    homeId={home.id}
-                    onSuccess={() => {
-                        setMoveDialogOpen(false);
-                    }}
-                />
-            )}
+            <MoveRecipeToFolderDialog
+                open={moveDialogOpen}
+                onOpenChange={setMoveDialogOpen}
+                recipe={recipe}
+                onSuccess={() => {
+                    setMoveDialogOpen(false);
+                }}
+            />
         </>
     );
 }

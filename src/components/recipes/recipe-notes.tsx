@@ -22,15 +22,7 @@ import { useAuthContext } from "@/components/auth/auth-provider";
 import type { InstaQLEntity } from "@instantdb/react";
 import type { AppSchema } from "@/instant.schema";
 
-type NoteWithRecipe = InstaQLEntity<
-    AppSchema,
-    "notes",
-    {
-        recipe: {
-            home: {};
-        };
-    }
-> & {
+type NoteWithRecipe = InstaQLEntity<AppSchema, "notes"> & {
     created: Date | string | number;
     updated: Date | string | number;
 };
@@ -40,7 +32,7 @@ interface RecipeNotesProps {
 }
 
 export function RecipeNotes({ recipeId }: RecipeNotesProps) {
-    const { user } = useAuthContext();
+    const { canEdit } = useAuthContext();
     const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [editingNote, setEditingNote] = useState<NoteWithRecipe | null>(null);
@@ -48,31 +40,24 @@ export function RecipeNotes({ recipeId }: RecipeNotesProps) {
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     // Query notes for this recipe, ordered by created date descending (newest first)
-    const query = user?.id
-        ? {
-              notes: {
-                  $: {
-                      where: {
-                          "recipe.id": recipeId,
-                      },
-                      order: { created: "desc" as const },
-                  },
-                  recipe: {
-                      home: {},
-                  },
-              },
-          }
-        : null;
+    const query = {
+        notes: {
+            $: {
+                where: {
+                    "recipe.id": recipeId,
+                },
+                order: { created: "desc" as const },
+            },
+        },
+    };
 
     const { data, isLoading } = db.useQuery(query);
 
-    const notes =
-        query && data
-            ? ((data as unknown as { notes?: NoteWithRecipe[] }).notes || [])
-            : ([] as NoteWithRecipe[]);
+    const notes = ((data as unknown as { notes?: NoteWithRecipe[] }).notes ||
+        []) as NoteWithRecipe[];
 
     const handleCreateNote = async () => {
-        if (!noteContent.trim() || !user?.id) return;
+        if (!noteContent.trim() || !canEdit) return;
 
         setIsSubmitting(true);
         try {
@@ -156,13 +141,15 @@ export function RecipeNotes({ recipeId }: RecipeNotesProps) {
                             <StickyNote className="h-5 w-5" />
                             Notes
                         </CardTitle>
-                        <Button
-                            onClick={() => setIsCreateDialogOpen(true)}
-                            size="sm"
-                        >
-                            <Plus className="mr-2 h-4 w-4" />
-                            Add Note
-                        </Button>
+                        {canEdit && (
+                            <Button
+                                onClick={() => setIsCreateDialogOpen(true)}
+                                size="sm"
+                            >
+                                <Plus className="mr-2 h-4 w-4" />
+                                Add Note
+                            </Button>
+                        )}
                     </div>
                 </CardHeader>
                 <CardContent>
@@ -181,12 +168,14 @@ export function RecipeNotes({ recipeId }: RecipeNotesProps) {
                                     key={note.id}
                                     className="border rounded-lg p-4 space-y-2 relative"
                                 >
-                                    <div className="absolute top-4 right-4">
-                                        <NoteActionMenu
-                                            note={note}
-                                            onEdit={() => handleEditNote(note)}
-                                        />
-                                    </div>
+                                    {canEdit && (
+                                        <div className="absolute top-4 right-4">
+                                            <NoteActionMenu
+                                                note={note}
+                                                onEdit={() => handleEditNote(note)}
+                                            />
+                                        </div>
+                                    )}
                                     <div className="pr-12">
                                         <p className="text-sm whitespace-pre-wrap">
                                             {note.content}

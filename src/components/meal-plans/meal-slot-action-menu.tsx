@@ -22,34 +22,25 @@ import {
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { db } from "@/lib/db/db";
-import { getUserRoleInHome } from "@/lib/utils";
+import { useAuthContext } from "@/components/auth/auth-provider";
 import { EditMealSlotDialog } from "./edit-meal-slot-dialog";
 import type { MealSlotWithRelations } from "@/hooks/use-meal-slots";
 
 interface MealSlotActionMenuProps {
     mealSlot: MealSlotWithRelations;
-    userId: string | null | undefined;
     onEdit?: () => void;
 }
 
 export function MealSlotActionMenu({
     mealSlot,
-    userId,
     onEdit,
 }: MealSlotActionMenuProps) {
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [editDialogOpen, setEditDialogOpen] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
+    const { canEdit } = useAuthContext();
 
-    // Get home from mealSlot relation
-    const home = mealSlot.mealPlan?.home;
-
-    // Check permissions - only show menu for owner/admin/member
-    const userRole = getUserRoleInHome(home ?? null, userId);
-    const canEditMealSlot = userRole && userRole !== "viewer";
-
-    // Don't render menu if user doesn't have permission
-    if (!canEditMealSlot) {
+    if (!canEdit) {
         return null;
     }
 
@@ -59,10 +50,7 @@ export function MealSlotActionMenu({
         setIsDeleting(true);
         try {
             db.transact(db.tx.mealSlots[mealSlot.id].delete());
-
-            // Wait a moment for the transaction to complete
             await new Promise((resolve) => setTimeout(resolve, 100));
-
             setDeleteDialogOpen(false);
         } catch (error) {
             console.error("Error deleting meal slot:", error);

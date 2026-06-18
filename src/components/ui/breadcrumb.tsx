@@ -11,12 +11,9 @@ export interface BreadcrumbItem {
 interface BreadcrumbProps {
     items: BreadcrumbItem[];
     className?: string;
-    role?: "owner" | "admin" | "member" | "viewer" | null;
 }
 
-export function Breadcrumb({ items, className, role }: BreadcrumbProps) {
-    const roleLabel = role ? role.charAt(0).toUpperCase() + role.slice(1) : null;
-
+export function Breadcrumb({ items, className }: BreadcrumbProps) {
     return (
         <nav
             aria-label="Breadcrumb"
@@ -49,14 +46,6 @@ export function Breadcrumb({ items, className, role }: BreadcrumbProps) {
                     </React.Fragment>
                 );
             })}
-            {roleLabel && (
-                <>
-                <ChevronRight className="h-4 w-4 mx-1" />
-                <span className="text-muted-foreground/70 italic">
-                    as {roleLabel}
-                </span>
-                </>
-            )}
         </nav>
     );
 }

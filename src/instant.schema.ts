@@ -40,6 +40,8 @@ const _schema = i.schema({
             procedure: i.string().optional(),
             source: i.string().optional(),
             videoURL: i.string().optional(),
+            isMeal: i.boolean().optional().indexed(),
+            components: i.string().optional(),
             created: i.date().indexed(),
             updated: i.date().indexed(),
         }),

@@ -12,12 +12,14 @@ import {
     CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { ImageSkeleton } from "@/components/ui/image-skeleton";
 import { RecipeActionMenu } from "./recipe-action-menu";
 import { useNavigate } from "@tanstack/react-router";
 import type { InstaQLEntity } from "@instantdb/react";
 import type { AppSchema } from "@/instant.schema";
 import { getRecipeImageUrl } from "@/lib/utils/recipe-image";
+import { parseMealComponents } from "@/lib/utils/recipe-meal";
 
 type RecipeWithRelations = InstaQLEntity<
     AppSchema,
@@ -30,9 +32,17 @@ type RecipeWithRelations = InstaQLEntity<
 
 interface RecipeCardProps {
     recipe: RecipeWithRelations | any;
+    selectable?: boolean;
+    selected?: boolean;
+    onToggleSelect?: (recipeId: string) => void;
 }
 
-export function RecipeCard({ recipe }: RecipeCardProps) {
+export function RecipeCard({
+    recipe,
+    selectable = false,
+    selected = false,
+    onToggleSelect,
+}: RecipeCardProps) {
     const navigate = useNavigate();
     const imageUrl = getRecipeImageUrl(recipe);
 
@@ -51,6 +61,10 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
         ? recipe.diet.split(",").map((d: string) => d.trim())
         : [];
 
+    const componentCount = recipe.isMeal
+        ? parseMealComponents(recipe.components).length
+        : 0;
+
     const formatTime = (minutes?: number) => {
         if (!minutes) return null;
         if (minutes < 60) return `${minutes} min`;
@@ -63,6 +77,11 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
     const cookTime = formatTime(recipe.cookTime);
 
     const handleCardClick = () => {
+        if (selectable && onToggleSelect && recipe.id) {
+            onToggleSelect(recipe.id);
+            return;
+        }
+
         if (recipe.id) {
             navigate({
                 to: "/$recipeId",
@@ -73,17 +92,69 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
 
     return (
         <Card
-            className="transition-all hover:shadow-lg hover:scale-[1.02] flex flex-col relative cursor-pointer"
+            className={`transition-all flex flex-col relative cursor-pointer ${
+                selectable
+                    ? selected
+                        ? "ring-2 ring-primary shadow-lg"
+                        : "hover:shadow-md"
+                    : "hover:shadow-lg hover:scale-[1.02]"
+            }`}
             onClick={handleCardClick}
         >
-            <div
-                className="absolute top-4 right-4 z-10"
-                onClick={(e) => e.stopPropagation()}
-            >
-                <RecipeActionMenu recipe={recipe} />
-            </div>
+            {selectable && (
+                <div
+                    className="absolute top-4 left-4 z-10"
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    <Checkbox
+                        checked={selected}
+                        onCheckedChange={() =>
+                            recipe.id && onToggleSelect?.(recipe.id)
+                        }
+                        aria-label={`Select ${recipe.name}`}
+                    />
+                </div>
+            )}
 
-            {imageUrl && (
+            {!selectable && (
+                <>
+                    {imageUrl ? (
+                        <div className="relative w-full h-48 overflow-hidden rounded-t-xl">
+                            <ImageSkeleton
+                                src={imageUrl}
+                                alt={recipe.name}
+                                className="w-full h-full object-cover"
+                                aspectRatio="16/9"
+                            />
+                            <div
+                                className="absolute top-4 right-4 z-10 flex items-center gap-2"
+                                onClick={(e) => e.stopPropagation()}
+                            >
+                                {recipe.isMeal && (
+                                    <Badge variant="default" className="shrink-0">
+                                        Meal
+                                    </Badge>
+                                )}
+                                <RecipeActionMenu recipe={recipe} />
+                            </div>
+                        </div>
+                    ) : (
+                        <div
+                            className="flex items-center justify-end gap-2 px-4 pt-4"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            {recipe.isMeal && (
+                                <Badge variant="default" className="shrink-0">
+                                    Meal
+                                </Badge>
+                            )}
+                            <RecipeActionMenu recipe={recipe} />
+                        </div>
+                    )}
+                </>
+            )}
+
+            {imageUrl && selectable && (
                 <div className="w-full h-48 overflow-hidden rounded-t-xl">
                     <ImageSkeleton
                         src={imageUrl}
@@ -94,7 +165,7 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
                 </div>
             )}
 
-            <CardHeader>
+            <CardHeader className={!selectable && !imageUrl ? "pt-0" : undefined}>
                 <CardTitle className="text-xl line-clamp-2">
                     {recipe.name}
                 </CardTitle>
@@ -106,6 +177,13 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
             </CardHeader>
 
             <CardContent className="flex-1 space-y-3">
+                {recipe.isMeal && componentCount > 0 && (
+                    <p className="text-sm text-muted-foreground">
+                        Combined from {componentCount} recipe
+                        {componentCount !== 1 ? "s" : ""}
+                    </p>
+                )}
+
                 {dietTypes.length > 0 && (
                     <div className="flex flex-wrap gap-2">
                         {dietTypes.map((diet: string, index: number) => (
@@ -137,23 +215,25 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
                     </div>
                 )}
 
-                <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                    {ingredients.length > 0 && (
-                        <div className="flex items-center gap-1">
-                            <Utensils className="h-4 w-4" />
-                            <span>
-                                {ingredients.length} ingredient
-                                {ingredients.length !== 1 ? "s" : ""}
-                            </span>
-                        </div>
-                    )}
-                    {equipment.length > 0 && (
-                        <div className="text-xs">
-                            {equipment.length} piece
-                            {equipment.length !== 1 ? "s" : ""} of equipment
-                        </div>
-                    )}
-                </div>
+                {!recipe.isMeal && (
+                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                        {ingredients.length > 0 && (
+                            <div className="flex items-center gap-1">
+                                <Utensils className="h-4 w-4" />
+                                <span>
+                                    {ingredients.length} ingredient
+                                    {ingredients.length !== 1 ? "s" : ""}
+                                </span>
+                            </div>
+                        )}
+                        {equipment.length > 0 && (
+                            <div className="text-xs">
+                                {equipment.length} piece
+                                {equipment.length !== 1 ? "s" : ""} of equipment
+                            </div>
+                        )}
+                    </div>
+                )}
 
                 {recipe.source && (
                     <a

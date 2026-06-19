@@ -1,7 +1,7 @@
 /** @format */
 
 import React from "react";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import useRecipe from "@/hooks/use-recipe";
 import {
     Loader2,
@@ -91,6 +91,7 @@ function RecipeDetailPage() {
     const { recipeId } = Route.useParams();
     const {
         recipe,
+        componentRecipes,
         isLoading: recipeLoading,
         error: recipeError,
     } = useRecipe(recipeId);
@@ -242,6 +243,11 @@ function RecipeDetailPage() {
                             <h1 className="text-3xl font-bold flex items-center">
                                 <BookOpen className="w-8 h-8 mr-2 inline-block text-primary" />
                                 {recipe.name}
+                                {recipe.isMeal && (
+                                    <Badge variant="default" className="ml-3">
+                                        Meal
+                                    </Badge>
+                                )}
                             </h1>
                         </div>
                         <div className="flex items-center gap-2">
@@ -381,6 +387,27 @@ function RecipeDetailPage() {
                         <p className="text-muted-foreground mt-2">
                             {recipe.description}
                         </p>
+                    )}
+
+                    {recipe.isMeal && componentRecipes.length > 0 && (
+                        <div className="mt-3 rounded-lg border bg-muted/30 p-4">
+                            <p className="text-sm font-medium mb-2">
+                                Combined from
+                            </p>
+                            <ul className="space-y-1">
+                                {componentRecipes.map((component) => (
+                                    <li key={component.id}>
+                                        <Link
+                                            to="/$recipeId"
+                                            params={{ recipeId: component.id }}
+                                            className="text-sm text-primary hover:underline"
+                                        >
+                                            {component.name || "Untitled recipe"}
+                                        </Link>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
                     )}
 
                     {/* Created and Updated Timestamps */}

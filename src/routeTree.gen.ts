@@ -15,6 +15,7 @@ import { Route as RecipesIndexRouteImport } from './routes/_recipes/index'
 import { Route as RecipesNewRouteImport } from './routes/_recipes/new'
 import { Route as RecipesRecipeIdIndexRouteImport } from './routes/_recipes/$recipeId/index'
 import { Route as PublicRecipesRecipeIdRouteImport } from './routes/public/recipes/$recipeId'
+import { Route as RecipesMealsNewRouteImport } from './routes/_recipes/meals/new'
 import { Route as RecipesRecipeIdPrintRouteImport } from './routes/_recipes/$recipeId/print'
 import { Route as RecipesRecipeIdEditRouteImport } from './routes/_recipes/$recipeId/edit'
 import { Route as PublicRecipesRecipeIdPrintRouteImport } from './routes/public/recipes/$recipeId/print'
@@ -48,6 +49,11 @@ const PublicRecipesRecipeIdRoute = PublicRecipesRecipeIdRouteImport.update({
   path: '/public/recipes/$recipeId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RecipesMealsNewRoute = RecipesMealsNewRouteImport.update({
+  id: '/meals/new',
+  path: '/meals/new',
+  getParentRoute: () => RecipesRoute,
+} as any)
 const RecipesRecipeIdPrintRoute = RecipesRecipeIdPrintRouteImport.update({
   id: '/$recipeId/print',
   path: '/$recipeId/print',
@@ -71,6 +77,7 @@ export interface FileRoutesByFullPath {
   '/': typeof RecipesIndexRoute
   '/$recipeId/edit': typeof RecipesRecipeIdEditRoute
   '/$recipeId/print': typeof RecipesRecipeIdPrintRoute
+  '/meals/new': typeof RecipesMealsNewRoute
   '/public/recipes/$recipeId': typeof PublicRecipesRecipeIdRouteWithChildren
   '/$recipeId': typeof RecipesRecipeIdIndexRoute
   '/public/recipes/$recipeId/print': typeof PublicRecipesRecipeIdPrintRoute
@@ -81,6 +88,7 @@ export interface FileRoutesByTo {
   '/': typeof RecipesIndexRoute
   '/$recipeId/edit': typeof RecipesRecipeIdEditRoute
   '/$recipeId/print': typeof RecipesRecipeIdPrintRoute
+  '/meals/new': typeof RecipesMealsNewRoute
   '/public/recipes/$recipeId': typeof PublicRecipesRecipeIdRouteWithChildren
   '/$recipeId': typeof RecipesRecipeIdIndexRoute
   '/public/recipes/$recipeId/print': typeof PublicRecipesRecipeIdPrintRoute
@@ -93,6 +101,7 @@ export interface FileRoutesById {
   '/_recipes/': typeof RecipesIndexRoute
   '/_recipes/$recipeId/edit': typeof RecipesRecipeIdEditRoute
   '/_recipes/$recipeId/print': typeof RecipesRecipeIdPrintRoute
+  '/_recipes/meals/new': typeof RecipesMealsNewRoute
   '/public/recipes/$recipeId': typeof PublicRecipesRecipeIdRouteWithChildren
   '/_recipes/$recipeId/': typeof RecipesRecipeIdIndexRoute
   '/public/recipes/$recipeId/print': typeof PublicRecipesRecipeIdPrintRoute
@@ -105,6 +114,7 @@ export interface FileRouteTypes {
     | '/'
     | '/$recipeId/edit'
     | '/$recipeId/print'
+    | '/meals/new'
     | '/public/recipes/$recipeId'
     | '/$recipeId'
     | '/public/recipes/$recipeId/print'
@@ -115,6 +125,7 @@ export interface FileRouteTypes {
     | '/'
     | '/$recipeId/edit'
     | '/$recipeId/print'
+    | '/meals/new'
     | '/public/recipes/$recipeId'
     | '/$recipeId'
     | '/public/recipes/$recipeId/print'
@@ -126,6 +137,7 @@ export interface FileRouteTypes {
     | '/_recipes/'
     | '/_recipes/$recipeId/edit'
     | '/_recipes/$recipeId/print'
+    | '/_recipes/meals/new'
     | '/public/recipes/$recipeId'
     | '/_recipes/$recipeId/'
     | '/public/recipes/$recipeId/print'
@@ -181,6 +193,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicRecipesRecipeIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_recipes/meals/new': {
+      id: '/_recipes/meals/new'
+      path: '/meals/new'
+      fullPath: '/meals/new'
+      preLoaderRoute: typeof RecipesMealsNewRouteImport
+      parentRoute: typeof RecipesRoute
+    }
     '/_recipes/$recipeId/print': {
       id: '/_recipes/$recipeId/print'
       path: '/$recipeId/print'
@@ -210,6 +229,7 @@ interface RecipesRouteChildren {
   RecipesIndexRoute: typeof RecipesIndexRoute
   RecipesRecipeIdEditRoute: typeof RecipesRecipeIdEditRoute
   RecipesRecipeIdPrintRoute: typeof RecipesRecipeIdPrintRoute
+  RecipesMealsNewRoute: typeof RecipesMealsNewRoute
   RecipesRecipeIdIndexRoute: typeof RecipesRecipeIdIndexRoute
 }
 
@@ -218,6 +238,7 @@ const RecipesRouteChildren: RecipesRouteChildren = {
   RecipesIndexRoute: RecipesIndexRoute,
   RecipesRecipeIdEditRoute: RecipesRecipeIdEditRoute,
   RecipesRecipeIdPrintRoute: RecipesRecipeIdPrintRoute,
+  RecipesMealsNewRoute: RecipesMealsNewRoute,
   RecipesRecipeIdIndexRoute: RecipesRecipeIdIndexRoute,
 }
 

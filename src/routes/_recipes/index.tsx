@@ -3,7 +3,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import useRecipes from "@/hooks/use-recipes";
 import useFolders from "@/hooks/use-folders";
-import { Loader2, Plus, BookOpen, Folder } from "lucide-react";
+import { Loader2, Plus, BookOpen, Folder, CheckSquare, UtensilsCrossed, X } from "lucide-react";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { useAuthContext } from "@/components/auth/auth-provider";
@@ -45,6 +45,8 @@ function RecipesPage() {
     const navigate = useNavigate();
     const [createFolderOpen, setCreateFolderOpen] = useState(false);
     const [unauthorizedOpen, setUnauthorizedOpen] = useState(false);
+    const [selectMode, setSelectMode] = useState(false);
+    const [selectedRecipeIds, setSelectedRecipeIds] = useState<string[]>([]);
 
     useEffect(() => {
         if (unauthorized === "1") {
@@ -139,6 +141,29 @@ function RecipesPage() {
         navigate({ to: "/new" });
     };
 
+    const handleCreateMeal = () => {
+        navigate({
+            to: "/meals/new",
+            search:
+                selectedRecipeIds.length > 0
+                    ? { recipes: selectedRecipeIds.join(",") }
+                    : {},
+        });
+    };
+
+    const toggleRecipeSelection = (recipeId: string) => {
+        setSelectedRecipeIds((prev) =>
+            prev.includes(recipeId)
+                ? prev.filter((id) => id !== recipeId)
+                : [...prev, recipeId]
+        );
+    };
+
+    const exitSelectMode = () => {
+        setSelectMode(false);
+        setSelectedRecipeIds([]);
+    };
+
     return (
         <div className="min-h-screen bg-background">
             <Navbar />
@@ -166,18 +191,47 @@ function RecipesPage() {
                         </div>
                         {canEdit && (
                             <div className="flex gap-2">
-                                <Button
-                                    onClick={() => setCreateFolderOpen(true)}
-                                    size="lg"
-                                    variant="outline"
-                                >
-                                    <Folder className="mr-2 h-4 w-4" />
-                                    Create Folder
-                                </Button>
-                                <Button onClick={handleCreateRecipe} size="lg">
-                                    <Plus className="mr-2 h-4 w-4" />
-                                    Create Recipe
-                                </Button>
+                                {selectMode ? (
+                                    <Button
+                                        onClick={exitSelectMode}
+                                        size="lg"
+                                        variant="outline"
+                                    >
+                                        <X className="mr-2 h-4 w-4" />
+                                        Cancel
+                                    </Button>
+                                ) : (
+                                    <>
+                                        <Button
+                                            onClick={() => setSelectMode(true)}
+                                            size="lg"
+                                            variant="outline"
+                                        >
+                                            <CheckSquare className="mr-2 h-4 w-4" />
+                                            Select
+                                        </Button>
+                                        <Button
+                                            onClick={handleCreateMeal}
+                                            size="lg"
+                                            variant="outline"
+                                        >
+                                            <UtensilsCrossed className="mr-2 h-4 w-4" />
+                                            Create Meal
+                                        </Button>
+                                        <Button
+                                            onClick={() => setCreateFolderOpen(true)}
+                                            size="lg"
+                                            variant="outline"
+                                        >
+                                            <Folder className="mr-2 h-4 w-4" />
+                                            Create Folder
+                                        </Button>
+                                        <Button onClick={handleCreateRecipe} size="lg">
+                                            <Plus className="mr-2 h-4 w-4" />
+                                            Create Recipe
+                                        </Button>
+                                    </>
+                                )}
                             </div>
                         )}
                     </div>
@@ -215,7 +269,13 @@ function RecipesPage() {
                                 <FolderCard key={folder.id} folder={folder} />
                             ))}
                             {recipes.map((recipe: any) => (
-                                <RecipeCard key={recipe.id} recipe={recipe} />
+                                <RecipeCard
+                                    key={recipe.id}
+                                    recipe={recipe}
+                                    selectable={selectMode}
+                                    selected={selectedRecipeIds.includes(recipe.id)}
+                                    onToggleSelect={toggleRecipeSelection}
+                                />
                             ))}
                         </div>
                     )}
@@ -230,6 +290,29 @@ function RecipesPage() {
             </main>
 
             {unauthorizedDialog}
+
+            {selectMode && canEdit && (
+                <div className="fixed bottom-0 inset-x-0 z-50 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+                    <div className="container mx-auto px-4 py-4 flex items-center justify-between gap-4">
+                        <p className="text-sm font-medium">
+                            {selectedRecipeIds.length} recipe
+                            {selectedRecipeIds.length !== 1 ? "s" : ""} selected
+                        </p>
+                        <div className="flex gap-2">
+                            <Button variant="outline" onClick={exitSelectMode}>
+                                Cancel
+                            </Button>
+                            <Button
+                                onClick={handleCreateMeal}
+                                disabled={selectedRecipeIds.length === 0}
+                            >
+                                <UtensilsCrossed className="mr-2 h-4 w-4" />
+                                Create Meal from {selectedRecipeIds.length || "..."}
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

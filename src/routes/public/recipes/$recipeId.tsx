@@ -17,6 +17,7 @@ import {
     Check,
     Share2,
     Play,
+    Printer,
 } from "lucide-react";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
 import { ImageSkeleton } from "@/components/ui/image-skeleton";
@@ -43,6 +44,13 @@ import {
     getRecipeNutritionImageUrl,
 } from "@/lib/utils/recipe-image";
 import { PublicNavbar } from "@/components/layout/public-navbar";
+import {
+    formatNumberAsFraction,
+    getScaledQuantity,
+    formatQuantity,
+    getScaledYield,
+} from "@/lib/utils/recipe-quantity-display";
+import { RecipeExportDialog } from "@/components/recipes/recipe-export-dialog";
 
 export const Route = createFileRoute("/public/recipes/$recipeId")({
     component: PublicRecipeDetailPage,
@@ -87,6 +95,7 @@ function PublicRecipeDetailPage() {
     const [isNutritionLabelOpen, setIsNutritionLabelOpen] =
         React.useState(false);
     const [linkCopied, setLinkCopied] = React.useState(false);
+    const [exportDialogOpen, setExportDialogOpen] = React.useState(false);
 
     // Parse recipe data
     const ingredients: Ingredient[] = recipe?.ingredients
@@ -186,139 +195,9 @@ function PublicRecipeDetailPage() {
         };
     }, [recipe]);
 
-    // Convert decimal to fraction parts (whole, numerator, denominator)
-    const decimalToFractionParts = (
-        decimal: number
-    ): { whole: number; num: number; den: number } | null => {
-        // Check for whole numbers
-        if (decimal % 1 === 0) {
-            return { whole: decimal, num: 0, den: 1 };
-        }
-
-        // Try to find a simple fraction
-        const tolerance = 0.001;
-        for (let denom = 2; denom <= 16; denom++) {
-            for (let num = 1; num < denom; num++) {
-                const value = num / denom;
-                if (Math.abs(decimal - value) < tolerance) {
-                    // Simplify the fraction
-                    const gcd = (a: number, b: number): number => {
-                        return b === 0 ? a : gcd(b, a % b);
-                    };
-                    const divisor = gcd(num, denom);
-                    const simplifiedNum = num / divisor;
-                    const simplifiedDenom = denom / divisor;
-                    return {
-                        whole: 0,
-                        num: simplifiedNum,
-                        den: simplifiedDenom,
-                    };
-                }
-            }
-        }
-
-        // Check for whole number + fraction
-        const whole = Math.floor(decimal);
-        const remainder = decimal - whole;
-        if (whole > 0 && remainder > 0) {
-            for (let denom = 2; denom <= 16; denom++) {
-                for (let num = 1; num < denom; num++) {
-                    const value = num / denom;
-                    if (Math.abs(remainder - value) < tolerance) {
-                        const gcd = (a: number, b: number): number => {
-                            return b === 0 ? a : gcd(b, a % b);
-                        };
-                        const divisor = gcd(num, denom);
-                        const simplifiedNum = num / divisor;
-                        const simplifiedDenom = denom / divisor;
-                        return {
-                            whole,
-                            num: simplifiedNum,
-                            den: simplifiedDenom,
-                        };
-                    }
-                }
-            }
-        }
-
-        return null;
-    };
-
-    // Format a number as a nicely formatted fraction component
-    const formatNumberAsFraction = (num: number): React.ReactNode => {
-        const parts = decimalToFractionParts(num);
-
-        if (!parts) {
-            // If no simple fraction found, return formatted decimal
-            return num.toFixed(2).replace(/\.?0+$/, "");
-        }
-
-        const { whole, num: numerator, den: denominator } = parts;
-
-        if (denominator === 1) {
-            // Whole number
-            return whole.toString();
-        }
-
-        if (whole === 0) {
-            // Just a fraction
-            return (
-                <span className="inline-flex items-baseline mr-1">
-                    <sup className="text-[0.7em] leading-none mr-0.5">
-                        {numerator}
-                    </sup>
-                    <span>⁄</span>
-                    <sub className="text-[0.7em] leading-none ml-0.5">
-                        {denominator}
-                    </sub>
-                </span>
-            );
-        }
-
-        // Whole number + fraction
-        return (
-            <span className="inline-flex items-baseline mr-1">
-                <span className="mr-1">{whole}</span>
-                <span className="inline-flex items-baseline">
-                    <sup className="text-[0.7em] leading-none mr-0.5">
-                        {numerator}
-                    </sup>
-                    <span>⁄</span>
-                    <sub className="text-[0.7em] leading-none ml-0.5">
-                        {denominator}
-                    </sub>
-                </span>
-            </span>
-        );
-    };
-
-    // Calculate scaled quantity with fraction formatting
-    const getScaledQuantity = (quantity: string): React.ReactNode => {
-        if (!quantity || quantity.trim() === "") return "";
-
-        // Try to parse as number
-        const num = parseFloat(quantity);
-        if (isNaN(num)) return quantity; // Return original if not a number
-
-        const scaled = num * scale;
-        return formatNumberAsFraction(scaled);
-    };
-
-    // Format original quantity to fraction if it's a decimal
-    const formatQuantity = (quantity: string): React.ReactNode => {
-        if (!quantity || quantity.trim() === "") return "";
-
-        const num = parseFloat(quantity);
-        if (isNaN(num)) return quantity;
-
-        return formatNumberAsFraction(num);
-    };
-
-    // Get scaled yield with fraction formatting
-    const getScaledYield = (yieldValue: number): React.ReactNode => {
-        const scaled = yieldValue * scale;
-        return formatNumberAsFraction(scaled);
-    };
+    const scaledQuantity = (quantity: string) =>
+        getScaledQuantity(quantity, scale);
+    const scaledYield = (yieldValue: number) => getScaledYield(yieldValue, scale);
 
     // Share handlers
     const handleCopyLink = async () => {
@@ -414,6 +293,14 @@ function PublicRecipeDetailPage() {
                                     ) : (
                                         <Copy className="h-4 w-4" />
                                     )}
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    size="icon"
+                                    onClick={() => setExportDialogOpen(true)}
+                                    title="Print recipe"
+                                >
+                                    <Printer className="h-4 w-4" />
                                 </Button>
                                 {typeof navigator.share === "function" && (
                                     <Button
@@ -668,7 +555,7 @@ function PublicRecipeDetailPage() {
                                                                                 )}
                                                                             </span>
                                                                             <span className="ml-1 text-primary font-semibold">
-                                                                                {getScaledQuantity(
+                                                                                {scaledQuantity(
                                                                                     ingredient.quantity
                                                                                 )}
                                                                             </span>
@@ -791,7 +678,7 @@ function PublicRecipeDetailPage() {
                                                                     )}
                                                                 </span>
                                                                 <span className="ml-1 text-primary font-semibold">
-                                                                    {getScaledYield(
+                                                                    {scaledYield(
                                                                         recipe.yield
                                                                     )}
                                                                 </span>
@@ -1031,6 +918,14 @@ function PublicRecipeDetailPage() {
                     )}
                 </div>
             </main>
+
+            <RecipeExportDialog
+                open={exportDialogOpen}
+                onOpenChange={setExportDialogOpen}
+                recipeId={recipeId}
+                isPublic
+                initialScale={scale}
+            />
         </>
     );
 }

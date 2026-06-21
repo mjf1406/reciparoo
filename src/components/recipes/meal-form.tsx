@@ -23,6 +23,8 @@ import {
 import useAllRecipes from "@/hooks/use-all-recipes";
 import type { MealComponent } from "@/lib/utils/recipe-meal";
 import { parseMealComponents } from "@/lib/utils/recipe-meal";
+import { SortableStepList } from "@/components/recipes/sortable-instruction-rows";
+import type { ProcedureStep } from "@/lib/utils/recipe-parse";
 
 const DIET_OPTIONS = [
     "vegan",
@@ -360,6 +362,14 @@ export function MealForm({
         };
         setInstructionSections(updated);
     };
+
+    const handleStepsChange = (sectionIndex: number, steps: ProcedureStep[]) => {
+        const updated = [...instructionSections];
+        updated[sectionIndex] = { ...updated[sectionIndex], steps };
+        setInstructionSections(updated);
+    };
+
+    const customStepsSectionIndex = 0;
 
     return (
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -749,49 +759,20 @@ export function MealForm({
                             className="border rounded-lg p-4 space-y-4 bg-muted/30"
                         >
                             <div className="space-y-3 pl-4 border-l-2 border-primary/20">
-                                {section.steps.map((step, stepIndex) => (
-                                    <div
-                                        key={stepIndex}
-                                        className="flex gap-2 items-start"
-                                    >
-                                        <div className="shrink-0 pt-2 text-sm font-medium text-muted-foreground">
-                                            {step.step}.
-                                        </div>
-                                        <Textarea
-                                            placeholder={`Step ${step.step} instruction...`}
-                                            value={step.instruction}
-                                            onChange={(e) =>
-                                                updateStep(
-                                                    sectionIndex,
-                                                    stepIndex,
-                                                    e.target.value
-                                                )
-                                            }
-                                            disabled={isLoading}
-                                            rows={2}
-                                            className="flex-1"
-                                        />
-                                        {section.steps.length > 1 && (
-                                            <Button
-                                                type="button"
-                                                variant="ghost"
-                                                size="icon"
-                                                onClick={() =>
-                                                    removeStep(sectionIndex, stepIndex)
-                                                }
-                                                disabled={isLoading}
-                                                className="mt-2"
-                                            >
-                                                <Trash2 className="h-4 w-4" />
-                                            </Button>
-                                        )}
-                                    </div>
-                                ))}
+                                <SortableStepList
+                                    sectionIndex={sectionIndex}
+                                    steps={section.steps}
+                                    isLoading={isLoading}
+                                    textareaRows={2}
+                                    onStepsChange={handleStepsChange}
+                                    onUpdate={updateStep}
+                                    onRemove={removeStep}
+                                />
                                 <Button
                                     type="button"
                                     variant="outline"
                                     size="sm"
-                                    onClick={() => addStep(sectionIndex)}
+                                    onClick={() => addStep(customStepsSectionIndex)}
                                     disabled={isLoading}
                                     className="w-full"
                                 >

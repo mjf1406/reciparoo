@@ -20,6 +20,8 @@ import {
     ComboboxEmpty,
     useComboboxAnchor,
 } from "@/components/ui/combobox";
+import { SortableSectionList } from "@/components/recipes/sortable-instruction-rows";
+import type { ProcedureStep } from "@/lib/utils/recipe-parse";
 
 const DIET_OPTIONS = [
     "vegan",
@@ -38,11 +40,6 @@ interface Ingredient {
     quantity: string;
     unit: string;
     name: string;
-}
-
-interface ProcedureStep {
-    step: number;
-    instruction: string;
 }
 
 interface InstructionSection {
@@ -391,6 +388,12 @@ export function RecipeForm({
         setInstructionSections(updated);
     };
 
+    const handleStepsChange = (sectionIndex: number, steps: ProcedureStep[]) => {
+        const updated = [...instructionSections];
+        updated[sectionIndex] = { ...updated[sectionIndex], steps };
+        setInstructionSections(updated);
+    };
+
     return (
         <form onSubmit={handleSubmit} className="space-y-6">
             {/* Name (Required) */}
@@ -721,101 +724,17 @@ export function RecipeForm({
             <div className="space-y-4">
                 <Label>Procedure / Instructions</Label>
                 <div className="space-y-6">
-                    {instructionSections.map((section, sectionIndex) => (
-                        <div
-                            key={sectionIndex}
-                            className="border rounded-lg p-4 space-y-4 bg-muted/30"
-                        >
-                            {/* Section Header */}
-                            <div className="flex items-center gap-2">
-                                <Input
-                                    placeholder="Section title (e.g., Mix the Dough)"
-                                    value={section.title}
-                                    onChange={(e) =>
-                                        updateSectionTitle(
-                                            sectionIndex,
-                                            e.target.value
-                                        )
-                                    }
-                                    disabled={isLoading}
-                                    className="flex-1 font-semibold"
-                                />
-                                {instructionSections.length > 1 && (
-                                    <Button
-                                        type="button"
-                                        variant="ghost"
-                                        size="icon"
-                                        onClick={() => removeSection(sectionIndex)}
-                                        disabled={isLoading}
-                                    >
-                                        <Trash2 className="h-4 w-4" />
-                                        <span className="sr-only">
-                                            Remove section
-                                        </span>
-                                    </Button>
-                                )}
-                            </div>
-
-                            {/* Steps within section */}
-                            <div className="space-y-3 pl-4 border-l-2 border-primary/20">
-                                {section.steps.map((step, stepIndex) => (
-                                    <div
-                                        key={stepIndex}
-                                        className="flex gap-2 items-start"
-                                    >
-                                        <div className="shrink-0 pt-2 text-sm font-medium text-muted-foreground">
-                                            {step.step}.
-                                        </div>
-                                        <Textarea
-                                            placeholder={`Step ${step.step} instruction...`}
-                                            value={step.instruction}
-                                            onChange={(e) =>
-                                                updateStep(
-                                                    sectionIndex,
-                                                    stepIndex,
-                                                    e.target.value
-                                                )
-                                            }
-                                            disabled={isLoading}
-                                            rows={3}
-                                            className="flex-1"
-                                        />
-                                        {section.steps.length > 1 && (
-                                            <Button
-                                                type="button"
-                                                variant="ghost"
-                                                size="icon"
-                                                onClick={() =>
-                                                    removeStep(
-                                                        sectionIndex,
-                                                        stepIndex
-                                                    )
-                                                }
-                                                disabled={isLoading}
-                                                className="mt-2"
-                                            >
-                                                <Trash2 className="h-4 w-4" />
-                                                <span className="sr-only">
-                                                    Remove step
-                                                </span>
-                                            </Button>
-                                        )}
-                                    </div>
-                                ))}
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => addStep(sectionIndex)}
-                                    disabled={isLoading}
-                                    className="w-full"
-                                >
-                                    <Plus className="mr-2 h-4 w-4" />
-                                    Add Step to Section
-                                </Button>
-                            </div>
-                        </div>
-                    ))}
+                    <SortableSectionList
+                        sections={instructionSections}
+                        isLoading={isLoading}
+                        onSectionsChange={setInstructionSections}
+                        onTitleChange={updateSectionTitle}
+                        onRemoveSection={removeSection}
+                        onStepsChange={handleStepsChange}
+                        onUpdateStep={updateStep}
+                        onRemoveStep={removeStep}
+                        onAddStep={addStep}
+                    />
                     <Button
                         type="button"
                         variant="outline"

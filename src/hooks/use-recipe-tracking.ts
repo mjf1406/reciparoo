@@ -44,6 +44,10 @@ const saveState = (recipeId: string, state: TrackingState) => {
     }
 };
 
+export function trackedItemClass(checked: boolean) {
+    return checked ? "line-through opacity-50" : "";
+}
+
 export function useRecipeTracking(recipeId: string) {
     const [state, setState] = useState<TrackingState>(() => loadState(recipeId));
 

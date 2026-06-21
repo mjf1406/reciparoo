@@ -27,8 +27,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useRecipeTracking } from "@/hooks/use-recipe-tracking";
+import { useRecipeTracking, trackedItemClass } from "@/hooks/use-recipe-tracking";
 import { useRecipeScale } from "@/hooks/use-recipe-scale";
+import { cn } from "@/lib/utils";
 import {
     Collapsible,
     CollapsibleContent,
@@ -569,7 +570,15 @@ function PublicRecipeDetailPage() {
                                                         />
                                                         <label
                                                             htmlFor={checkboxId}
-                                                            className="flex-1 cursor-pointer"
+                                                            className={cn(
+                                                                "flex-1 cursor-pointer",
+                                                                trackedItemClass(
+                                                                    isChecked(
+                                                                        "ingredients",
+                                                                        index
+                                                                    )
+                                                                )
+                                                            )}
                                                         >
                                                             <div className="flex items-baseline gap-2">
                                                                 <span className="font-medium">
@@ -770,7 +779,15 @@ function PublicRecipeDetailPage() {
                                                 />
                                                 <label
                                                     htmlFor={checkboxId}
-                                                    className="flex-1 cursor-pointer"
+                                                    className={cn(
+                                                        "flex-1 cursor-pointer",
+                                                        trackedItemClass(
+                                                            isChecked(
+                                                                "equipment",
+                                                                index
+                                                            )
+                                                        )
+                                                    )}
                                                 >
                                                     {eq}
                                                 </label>
@@ -831,7 +848,15 @@ function PublicRecipeDetailPage() {
                                                     />
                                                     <label
                                                         htmlFor={checkboxId}
-                                                        className="flex-1 cursor-pointer"
+                                                        className={cn(
+                                                            "flex-1 cursor-pointer",
+                                                            trackedItemClass(
+                                                                isChecked(
+                                                                    "procedures",
+                                                                    index
+                                                                )
+                                                            )
+                                                        )}
                                                     >
                                                         <div className="flex items-start gap-2">
                                                             <span className="font-semibold text-primary shrink-0">
@@ -912,7 +937,15 @@ function PublicRecipeDetailPage() {
                                                                                 htmlFor={
                                                                                     checkboxId
                                                                                 }
-                                                                                className="flex-1 cursor-pointer"
+                                                                                className={cn(
+                                                                                    "flex-1 cursor-pointer",
+                                                                                    trackedItemClass(
+                                                                                        isChecked(
+                                                                                            "procedures",
+                                                                                            currentGlobalIndex
+                                                                                        )
+                                                                                    )
+                                                                                )}
                                                                             >
                                                                                 <div className="flex items-start gap-2">
                                                                                     <span className="font-semibold text-primary shrink-0">
